@@ -2,137 +2,135 @@ import type { MetaFunction } from "@remix-run/node";
 
 export const meta: MetaFunction = () => {
   return [
-    { title: "New Remix App" },
-    { name: "description", content: "Welcome to Remix!" },
+    { title: "Crypto Dashboard" },
+    { name: "description", content: "Cryptocurrency Dashboard with Real-time Rates" },
   ];
 };
 
-export default function Index() {
+// Crypto currency data array (20 items, displaying first 10)
+const cryptocurrencies = [
+  { id: 1, name: "Bitcoin", symbol: "BTC", exchangeRate: 43520.75, exchangeRateInBTC: 1.0 },
+  { id: 2, name: "Ethereum", symbol: "ETH", exchangeRate: 2678.32, exchangeRateInBTC: 0.0615 },
+  { id: 3, name: "Cardano", symbol: "ADA", exchangeRate: 0.4521, exchangeRateInBTC: 0.0000104 },
+  { id: 4, name: "Polkadot", symbol: "DOT", exchangeRate: 5.83, exchangeRateInBTC: 0.000134 },
+  { id: 5, name: "Chainlink", symbol: "LINK", exchangeRate: 14.72, exchangeRateInBTC: 0.000338 },
+  { id: 6, name: "Litecoin", symbol: "LTC", exchangeRate: 73.15, exchangeRateInBTC: 0.00168 },
+  { id: 7, name: "Bitcoin Cash", symbol: "BCH", exchangeRate: 234.67, exchangeRateInBTC: 0.00539 },
+  { id: 8, name: "Stellar", symbol: "XLM", exchangeRate: 0.1289, exchangeRateInBTC: 0.00000296 },
+  { id: 9, name: "VeChain", symbol: "VET", exchangeRate: 0.0275, exchangeRateInBTC: 0.00000063 },
+  { id: 10, name: "Dogecoin", symbol: "DOGE", exchangeRate: 0.0821, exchangeRateInBTC: 0.00000189 },
+  { id: 11, name: "Solana", symbol: "SOL", exchangeRate: 102.45, exchangeRateInBTC: 0.00235 },
+  { id: 12, name: "Avalanche", symbol: "AVAX", exchangeRate: 36.78, exchangeRateInBTC: 0.000845 },
+  { id: 13, name: "Polygon", symbol: "MATIC", exchangeRate: 0.7892, exchangeRateInBTC: 0.0000181 },
+  { id: 14, name: "Cosmos", symbol: "ATOM", exchangeRate: 9.67, exchangeRateInBTC: 0.000222 },
+  { id: 15, name: "Algorand", symbol: "ALGO", exchangeRate: 0.1634, exchangeRateInBTC: 0.00000375 },
+  { id: 16, name: "Tezos", symbol: "XTZ", exchangeRate: 0.9123, exchangeRateInBTC: 0.0000210 },
+  { id: 17, name: "Internet Computer", symbol: "ICP", exchangeRate: 4.78, exchangeRateInBTC: 0.000110 },
+  { id: 18, name: "NEAR Protocol", symbol: "NEAR", exchangeRate: 1.89, exchangeRateInBTC: 0.0000434 },
+  { id: 19, name: "Flow", symbol: "FLOW", exchangeRate: 0.6745, exchangeRateInBTC: 0.0000155 },
+  { id: 20, name: "Hedera", symbol: "HBAR", exchangeRate: 0.0567, exchangeRateInBTC: 0.00000130 }
+];
+
+// Display only the first 10 cryptocurrencies
+const displayedCrypto = cryptocurrencies.slice(0, 10);
+
+interface CryptoCardProps {
+  crypto: {
+    id: number;
+    name: string;
+    symbol: string;
+    exchangeRate: number;
+    exchangeRateInBTC: number;
+  };
+}
+
+function CryptoCard({ crypto }: CryptoCardProps) {
   return (
-    <div className="flex h-screen items-center justify-center">
-      <div className="flex flex-col items-center gap-16">
-        <header className="flex flex-col items-center gap-9">
-          <h1 className="leading text-2xl font-bold text-gray-800 dark:text-gray-100">
-            Welcome to <span className="sr-only">Remix</span>
-          </h1>
-          <div className="h-[144px] w-[434px]">
-            <img
-              src="/logo-light.png"
-              alt="Remix"
-              className="block w-full dark:hidden"
-            />
-            <img
-              src="/logo-dark.png"
-              alt="Remix"
-              className="hidden w-full dark:block"
-            />
+    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-6 shadow-2xl border border-gray-700 hover:shadow-3xl hover:scale-105 transition-all duration-300 min-h-[200px] flex flex-col justify-between">
+      {/* Card Header */}
+      <div className="flex justify-between items-start mb-4">
+        <div className="flex items-center space-x-2">
+          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+            {crypto.symbol.slice(0, 2)}
           </div>
-        </header>
-        <nav className="flex flex-col items-center justify-center gap-4 rounded-3xl border border-gray-200 p-6 dark:border-gray-700">
-          <p className="leading-6 text-gray-700 dark:text-gray-200">
-            What&apos;s next?
+          <div>
+            <h3 className="text-white font-semibold text-lg leading-tight">{crypto.name}</h3>
+            <p className="text-gray-400 text-sm">ID: {crypto.id}</p>
+          </div>
+        </div>
+        <div className="bg-yellow-500 text-black px-2 py-1 rounded-md text-xs font-bold">
+          {crypto.symbol}
+        </div>
+      </div>
+
+      {/* Card Body */}
+      <div className="space-y-3 flex-grow">
+        <div>
+          <p className="text-gray-400 text-sm">Exchange Rate</p>
+          <p className="text-white text-xl font-bold">
+            ${crypto.exchangeRate.toLocaleString('en-US', {
+              minimumFractionDigits: 2,
+              maximumFractionDigits: 8
+            })}
           </p>
-          <ul>
-            {resources.map(({ href, text, icon }) => (
-              <li key={href}>
-                <a
-                  className="group flex items-center gap-3 self-stretch p-3 leading-normal text-blue-700 hover:underline dark:text-blue-500"
-                  href={href}
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  {icon}
-                  {text}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
+        </div>
+
+        <div>
+          <p className="text-gray-400 text-sm">Rate in Bitcoin</p>
+          <p className="text-orange-400 text-lg font-semibold">
+            ₿ {crypto.exchangeRateInBTC.toFixed(8)}
+          </p>
+        </div>
+      </div>
+
+      {/* Card Footer */}
+      <div className="mt-4 pt-3 border-t border-gray-700">
+        <div className="flex justify-between items-center">
+          <span className="text-gray-500 text-xs">CRYPTO CARD</span>
+          <div className="flex space-x-1">
+            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
+            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-const resources = [
-  {
-    href: "https://remix.run/start/quickstart",
-    text: "Quick Start (5 min)",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="none"
-        className="stroke-gray-600 group-hover:stroke-current dark:stroke-gray-300"
-      >
-        <path
-          d="M8.51851 12.0741L7.92592 18L15.6296 9.7037L11.4815 7.33333L12.0741 2L4.37036 10.2963L8.51851 12.0741Z"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    href: "https://remix.run/start/tutorial",
-    text: "Tutorial (30 min)",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="none"
-        className="stroke-gray-600 group-hover:stroke-current dark:stroke-gray-300"
-      >
-        <path
-          d="M4.561 12.749L3.15503 14.1549M3.00811 8.99944H1.01978M3.15503 3.84489L4.561 5.2508M8.3107 1.70923L8.3107 3.69749M13.4655 3.84489L12.0595 5.2508M18.1868 17.0974L16.635 18.6491C16.4636 18.8205 16.1858 18.8205 16.0144 18.6491L13.568 16.2028C13.383 16.0178 13.0784 16.0347 12.915 16.239L11.2697 18.2956C11.047 18.5739 10.6029 18.4847 10.505 18.142L7.85215 8.85711C7.75756 8.52603 8.06365 8.21994 8.39472 8.31453L17.6796 10.9673C18.0223 11.0653 18.1115 11.5094 17.8332 11.7321L15.7766 13.3773C15.5723 13.5408 15.5554 13.8454 15.7404 14.0304L18.1868 16.4767C18.3582 16.6481 18.3582 16.926 18.1868 17.0974Z"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    href: "https://remix.run/docs",
-    text: "Remix Docs",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="20"
-        viewBox="0 0 20 20"
-        fill="none"
-        className="stroke-gray-600 group-hover:stroke-current dark:stroke-gray-300"
-      >
-        <path
-          d="M9.99981 10.0751V9.99992M17.4688 17.4688C15.889 19.0485 11.2645 16.9853 7.13958 12.8604C3.01467 8.73546 0.951405 4.11091 2.53116 2.53116C4.11091 0.951405 8.73546 3.01467 12.8604 7.13958C16.9853 11.2645 19.0485 15.889 17.4688 17.4688ZM2.53132 17.4688C0.951566 15.8891 3.01483 11.2645 7.13974 7.13963C11.2647 3.01471 15.8892 0.951453 17.469 2.53121C19.0487 4.11096 16.9854 8.73551 12.8605 12.8604C8.73562 16.9853 4.11107 19.0486 2.53132 17.4688Z"
-          strokeWidth="1.5"
-          strokeLinecap="round"
-        />
-      </svg>
-    ),
-  },
-  {
-    href: "https://rmx.as/discord",
-    text: "Join Discord",
-    icon: (
-      <svg
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="20"
-        viewBox="0 0 24 20"
-        fill="none"
-        className="stroke-gray-600 group-hover:stroke-current dark:stroke-gray-300"
-      >
-        <path
-          d="M15.0686 1.25995L14.5477 1.17423L14.2913 1.63578C14.1754 1.84439 14.0545 2.08275 13.9422 2.31963C12.6461 2.16488 11.3406 2.16505 10.0445 2.32014C9.92822 2.08178 9.80478 1.84975 9.67412 1.62413L9.41449 1.17584L8.90333 1.25995C7.33547 1.51794 5.80717 1.99419 4.37748 2.66939L4.19 2.75793L4.07461 2.93019C1.23864 7.16437 0.46302 11.3053 0.838165 15.3924L0.868838 15.7266L1.13844 15.9264C2.81818 17.1714 4.68053 18.1233 6.68582 18.719L7.18892 18.8684L7.50166 18.4469C7.96179 17.8268 8.36504 17.1824 8.709 16.4944L8.71099 16.4904C10.8645 17.0471 13.128 17.0485 15.2821 16.4947C15.6261 17.1826 16.0293 17.8269 16.4892 18.4469L16.805 18.8725L17.3116 18.717C19.3056 18.105 21.1876 17.1751 22.8559 15.9238L23.1224 15.724L23.1528 15.3923C23.5873 10.6524 22.3579 6.53306 19.8947 2.90714L19.7759 2.73227L19.5833 2.64518C18.1437 1.99439 16.6386 1.51826 15.0686 1.25995ZM16.6074 10.7755L16.6074 10.7756C16.5934 11.6409 16.0212 12.1444 15.4783 12.1444C14.9297 12.1444 14.3493 11.6173 14.3493 10.7877C14.3493 9.94885 14.9378 9.41192 15.4783 9.41192C16.0471 9.41192 16.6209 9.93851 16.6074 10.7755ZM8.49373 12.1444C7.94513 12.1444 7.36471 11.6173 7.36471 10.7877C7.36471 9.94885 7.95323 9.41192 8.49373 9.41192C9.06038 9.41192 9.63892 9.93712 9.6417 10.7815C9.62517 11.6239 9.05462 12.1444 8.49373 12.1444Z"
-          strokeWidth="1.5"
-        />
-      </svg>
-    ),
-  },
-];
+export default function Index() {
+  return (
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto">
+        {/* Dashboard Header */}
+        <header className="mb-8 text-center">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-2">
+            Crypto Dashboard
+          </h1>
+          <p className="text-gray-600 dark:text-gray-400 text-lg">
+            Real-time cryptocurrency exchange rates and Bitcoin conversions
+          </p>
+          <div className="mt-4 inline-flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900 rounded-full">
+            <span className="text-blue-800 dark:text-blue-200 text-sm font-medium">
+              Displaying {displayedCrypto.length} of {cryptocurrencies.length} currencies
+            </span>
+          </div>
+        </header>
+
+        {/* Crypto Cards Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+          {displayedCrypto.map((crypto) => (
+            <CryptoCard key={crypto.id} crypto={crypto} />
+          ))}
+        </div>
+
+        {/* Footer */}
+        <footer className="mt-12 text-center">
+          <p className="text-gray-500 dark:text-gray-400 text-sm">
+            Built with Remix • Styled with Tailwind CSS
+          </p>
+        </footer>
+      </div>
+    </div>
+  );
+}
