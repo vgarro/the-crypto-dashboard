@@ -83,8 +83,8 @@ export default function Index() {
       initialData.totalAvailable
     );
 
-    // Clear API error state if we have initial data, or set it if we have an error
-    if (initialData.error) {
+    // Check if we have an error condition (empty data with 0 total available suggests error)
+    if (initialData.cryptocurrencies.length === 0 && initialData.totalAvailable === 0) {
       setApiError(true);
     } else {
       setApiError(false);

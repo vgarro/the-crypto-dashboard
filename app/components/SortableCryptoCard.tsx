@@ -1,19 +1,48 @@
 import { useSortable } from '@dnd-kit/sortable';
 import { CSS } from '@dnd-kit/utilities';
 import { type CryptoCurrency } from '~/services/coinbase.server';
+import { getCryptoIcon } from '~/utils/cryptoIcons';
 
 interface SortableCryptoCardProps {
     crypto: CryptoCurrency;
 }
 
 function CryptoCard({ crypto }: { crypto: CryptoCurrency }) {
+    const iconPath = getCryptoIcon(crypto.symbol, crypto.name);
+
     return (
         <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-6 shadow-2xl border border-gray-700 hover:shadow-3xl hover:scale-105 transition-all duration-300 min-h-[200px] flex flex-col justify-between">
             {/* Card Header */}
             <div className="flex justify-between items-start mb-4">
                 <div className="flex items-center space-x-2">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-                        {crypto.symbol.slice(0, 2)}
+                    <div className="w-10 h-10 relative flex items-center justify-center">
+                        {iconPath ? (
+                            <>
+                                <img
+                                    src={iconPath}
+                                    alt={`${crypto.name} icon`}
+                                    width={40}
+                                    height={40}
+                                    className="rounded-full"
+                                    onError={(e) => {
+                                        // Hide the image and show the fallback
+                                        const target = e.target as HTMLImageElement;
+                                        target.style.display = 'none';
+                                        const fallback = target.nextElementSibling as HTMLElement;
+                                        if (fallback) {
+                                            fallback.style.display = 'flex';
+                                        }
+                                    }}
+                                />
+                                <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm hidden">
+                                    {crypto.symbol.slice(0, 2)}
+                                </div>
+                            </>
+                        ) : (
+                            <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
+                                {crypto.symbol.slice(0, 2)}
+                            </div>
+                        )}
                     </div>
                     <div>
                         <h3 className="text-white font-semibold text-lg leading-tight">{crypto.name}</h3>
