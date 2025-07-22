@@ -2,6 +2,7 @@ interface StatusIndicatorProps {
     isLiveData: boolean;
     lastUpdated: string;
     filterValue: string;
+    apiError?: boolean;
     searchResultsInfo?: {
         fromCache: boolean;
         hasMoreResults: boolean;
@@ -13,6 +14,7 @@ export default function StatusIndicator({
     isLiveData,
     lastUpdated,
     filterValue,
+    apiError = false,
     searchResultsInfo
 }: StatusIndicatorProps) {
     // Format the last updated time
@@ -25,15 +27,40 @@ export default function StatusIndicator({
         });
     };
 
+    // Determine status display based on API error and live data state
+    const getStatusConfig = () => {
+        if (apiError) {
+            return {
+                bgColor: 'bg-red-100 dark:bg-red-900',
+                textColor: 'text-red-800 dark:text-red-200',
+                dotColor: 'bg-red-500',
+                label: 'API Down'
+            };
+        } else if (isLiveData) {
+            return {
+                bgColor: 'bg-green-100 dark:bg-green-900',
+                textColor: 'text-green-800 dark:text-green-200',
+                dotColor: 'bg-green-500',
+                label: 'Live Data'
+            };
+        } else {
+            return {
+                bgColor: 'bg-orange-100 dark:bg-orange-900',
+                textColor: 'text-orange-800 dark:text-orange-200',
+                dotColor: 'bg-orange-500',
+                label: 'Fallback Data'
+            };
+        }
+    };
+
+    const statusConfig = getStatusConfig();
+
     return (
         <div className="flex flex-col space-y-2">
             {/* Live Data Status */}
-            <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium w-fit ${isLiveData
-                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-                }`}>
-                <div className={`w-2 h-2 rounded-full mr-2 ${isLiveData ? 'bg-green-500' : 'bg-orange-500'}`}></div>
-                {isLiveData ? 'Live Data' : 'Fallback Data'}
+            <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium w-fit ${statusConfig.bgColor} ${statusConfig.textColor}`}>
+                <div className={`w-2 h-2 rounded-full mr-2 ${statusConfig.dotColor}`}></div>
+                {statusConfig.label}
             </div>
 
             {/* Last Updated */}

@@ -6,6 +6,7 @@ interface ActionBarProps {
     onRefresh: () => void;
     lastUpdated: string;
     isLiveData: boolean;
+    apiError?: boolean;
     filterValue: string;
     onFilterChange: (value: string) => void;
     isSearching?: boolean;
@@ -20,6 +21,7 @@ export default function ActionBar({
     onRefresh,
     lastUpdated,
     isLiveData,
+    apiError = false,
     filterValue,
     onFilterChange,
     isSearching = false,
@@ -43,6 +45,7 @@ export default function ActionBar({
                     {/* Status Information */}
                     <StatusIndicator
                         isLiveData={isLiveData}
+                        apiError={apiError}
                         lastUpdated={lastUpdated}
                         filterValue={filterValue}
                         searchResultsInfo={searchResultsInfo}
@@ -60,6 +63,7 @@ export default function ActionBar({
                     <div className="col-span-3">
                         <StatusIndicator
                             isLiveData={isLiveData}
+                            apiError={apiError}
                             lastUpdated={lastUpdated}
                             filterValue={filterValue}
                             searchResultsInfo={searchResultsInfo}

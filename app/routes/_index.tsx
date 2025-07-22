@@ -66,6 +66,7 @@ export default function Index() {
   const [cryptoData, setCryptoData] = useState<CryptoData>(initialData);
   const [filterValue, setFilterValue] = useState<string>('');
   const [isSearching, setIsSearching] = useState<boolean>(false);
+  const [apiError, setApiError] = useState<boolean>(false);
 
   // Apply saved order on initial load (client-side only) - runs only once
   useEffect(() => {
@@ -81,6 +82,14 @@ export default function Index() {
       initialData.isLiveData,
       initialData.totalAvailable
     );
+
+    // Clear API error state if we have initial data, or set it if we have an error
+    if (initialData.error) {
+      setApiError(true);
+    } else {
+      setApiError(false);
+    }
+
     // Empty dependency array - runs only once on mount
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -102,6 +111,9 @@ export default function Index() {
     try {
       const result = await performSmartSearch(query);
 
+      // Clear any previous API errors on successful search
+      setApiError(false);
+
       // Apply saved order to search results
       const orderedCryptos = applySavedOrder(result.cryptocurrencies);
 
@@ -117,6 +129,25 @@ export default function Index() {
       });
     } catch (error) {
       console.error('Smart search failed:', error);
+
+      // Determine if this is an API connectivity issue
+      const isApiDown = error instanceof TypeError && error.message.includes('fetch') ||
+        (error instanceof Error && (
+          error.message.includes('Failed to search cryptocurrencies') ||
+          error.message.includes('Failed to fetch') ||
+          error.message.includes('NetworkError')
+        ));
+
+      if (isApiDown) {
+        // Set API error state
+        setApiError(true);
+        setCryptoData(prev => ({
+          ...prev,
+          isLiveData: false,
+          error: 'Search API is currently unavailable'
+        }));
+      }
+
       // Keep current data on search failure
     } finally {
       setIsSearching(false);
@@ -164,9 +195,23 @@ export default function Index() {
       }
 
       if (!response.ok) {
-        throw new Error('Failed to fetch data');
+        // Handle different HTTP error statuses
+        if (response.status >= 500) {
+          // Server errors indicate API is down
+          throw new Error(`API server error: ${response.status}`);
+        } else if (response.status === 429) {
+          // Rate limiting
+          throw new Error('Rate limit exceeded');
+        } else {
+          // Other client errors
+          throw new Error(`Request failed: ${response.status}`);
+        }
       }
+
       const newData = await response.json();
+
+      // Clear any previous API errors on successful response
+      setApiError(false);
 
       // Update smart cache with fresh data
       if (!newData.isSearchResult) {
@@ -183,7 +228,27 @@ export default function Index() {
       });
     } catch (error) {
       console.error('Failed to refresh data:', error);
+
+      // Determine if this is an API connectivity issue
+      const isApiDown = error instanceof TypeError && error.message.includes('fetch') ||
+        (error instanceof Error && (
+          error.message.includes('API server error') ||
+          error.message.includes('Failed to fetch') ||
+          error.message.includes('NetworkError')
+        ));
+
+      if (isApiDown) {
+        // Set API error state and update crypto data to reflect API down status
+        setApiError(true);
+        setCryptoData(prev => ({
+          ...prev,
+          isLiveData: false,
+          error: 'API is currently unavailable'
+        }));
+      }
+
       // Optionally show an error message to the user
+      // For now, the error state will be shown via the status indicator
     }
   }, [cryptoData.isSearchResult, cryptoData.searchQuery]);
 
@@ -232,6 +297,7 @@ export default function Index() {
               onRefresh={handleRefresh}
               lastUpdated={lastUpdated}
               isLiveData={isLiveData}
+              apiError={apiError}
               filterValue={filterValue}
               onFilterChange={handleFilterChange}
               isSearching={isSearching}
