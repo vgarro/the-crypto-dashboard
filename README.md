@@ -50,15 +50,27 @@ npm start
 - Usage of direct API to retrieve data.
    - Since Exchange rates change SO often, a local database to persist data that changes constantly is overkill.
    - In case a more robust caching mechanism is necessary, the local storage version of the smart cache can be changed.
+   - SMART Cache:
+        - Since the Backend limits results to 10, the initial search is being done in those 10,
+        - When found, a local storage is implemented to save the results by the search Key (fast retrieval on subsequent calls)
+        - When no results, hit the public API for results.
+  - When the API is down, there's placeholder data to be displayed (Live icon is updated accordingly)
 - Action Bar Component (Main)
     - This component holds 3 other components: Search, Live updates and Auto Update toggle.
-    - There are reason to split it
+    - There are reason to split it is for readability and maintainability
+- Drag and Drop Library:
+    - Used dnd-kit for it's simplicity and support for React. Suggested by Chat-GPT research.
 
 - Bonus points:
     - Local storage to keep drag and drop option: :success:
     - Dark / Light Mode: I attempted three approaches (tailwind CSS + Cookie), (tailwind CSS + React), (Themed Remix + CSS + Cookie) without luck.
-     I ended up dropping the effort.
+     I ended up dropping the effort. Suggested approaches by CHAT-GPT
     - Jest tests: The initial test setup was failing and my brain was
+
+CURSOR usage
+- Yes, I used cursor for generating the majority of this code
+- Full Transparency: I'm attaching chat history (Prompt + Results) in x-cursor-logs
+
 
 
 **Environment Variables:**
