@@ -46,6 +46,17 @@ npm start
 
 **Data Flow:** Remix loader → Coinbase API → Client hydration → Real-time updates
 
+**Tradeoffs:**
+- Usage of direct API to retrieve data.
+   - Since Exchange rates change SO often, a local database to persist data that changes constantly is overkill.
+   - In case a more robust caching mechanism is necessary, the local storage version of the smart cache can be changed.
+- Action Bar Component
+    - This component holds 3 other components: Search, Live updates and Auto Update toggle.
+    - There's a good reason to split it
+
+- `app/services/coinbase.server.ts` - API service layer with configurable constants
+- `app/components/` - Reusable UI components
+
 
 **Environment Variables:**
 ```bash
