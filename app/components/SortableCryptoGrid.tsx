@@ -81,7 +81,6 @@ function StaticCryptoCard({ crypto }: { crypto: CryptoCurrency }) {
 export default function SortableCryptoGrid({
     cryptocurrencies,
     onReorder,
-    filterValue = ''
 }: SortableCryptoGridProps) {
     const [activeId, setActiveId] = React.useState<number | null>(null);
     const [isClient, setIsClient] = React.useState(false);

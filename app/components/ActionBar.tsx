@@ -41,15 +41,6 @@ export default function ActionBar({
     };
 
     // Auto-refresh functionality
-    useEffect(() => {
-        if (!autoRefresh) return;
-
-        const interval = setInterval(() => {
-            handleRefresh();
-        }, REFRESH_RATE_MS);
-
-        return () => clearInterval(interval);
-    }, [autoRefresh, onRefresh]);
 
     const handleRefresh = useCallback(async () => {
         setIsRefreshing(true);
@@ -59,6 +50,16 @@ export default function ActionBar({
             setIsRefreshing(false);
         }
     }, [onRefresh]);
+
+    useEffect(() => {
+        if (!autoRefresh) return;
+
+        const interval = setInterval(() => {
+            handleRefresh();
+        }, REFRESH_RATE_MS);
+
+        return () => clearInterval(interval);
+    }, [autoRefresh, onRefresh, handleRefresh]);
 
     const handleToggleAutoRefresh = () => {
         setAutoRefresh(!autoRefresh);

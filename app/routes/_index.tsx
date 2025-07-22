@@ -29,6 +29,7 @@ interface CryptoData {
 }
 
 // Remix Loader Function - Server-side data fetching for initial render
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
     // Fetch cryptocurrency data from the Coinbase service
@@ -82,7 +83,8 @@ export default function Index() {
       initialData.isLiveData,
       initialData.totalAvailable
     );
-  }, []);
+  }, [cryptoData.cryptocurrencies, cryptoData.isLiveData, cryptoData.totalAvailable
+    , initialData.cryptocurrencies, initialData.isLiveData, initialData.totalAvailable]);
 
   // Smart search function that uses caching
   const performSmartSearch = useCallback(async (query: string): Promise<SearchResult> => {
@@ -130,7 +132,7 @@ export default function Index() {
       } else {
         // Reset to base data when filter is cleared
         if (cryptoData.isSearchResult) {
-          setCryptoData(prev => ({
+          setCryptoData(() => ({
             ...initialData,
             cryptocurrencies: applySavedOrder(initialData.cryptocurrencies),
           }));
@@ -139,7 +141,7 @@ export default function Index() {
     }, 300); // 300ms debounce
 
     return () => clearTimeout(timeoutId);
-  }, [filterValue, handleSearch]);
+  }, [filterValue, handleSearch, cryptoData.isSearchResult, initialData]);
 
   // All cryptocurrencies are already filtered by the smart search
   const filteredCryptocurrencies = cryptoData.cryptocurrencies;
@@ -274,7 +276,7 @@ export default function Index() {
             </div>
             <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No cards found</h3>
             <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-              No cryptocurrency cards match your search for "<span className="font-medium">{filterValue}</span>"
+              No cryptocurrency cards match your search for &quot;<span className="font-medium">{filterValue}</span>&quot;
             </p>
             <button
               onClick={() => setFilterValue('')}

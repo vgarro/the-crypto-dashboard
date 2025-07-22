@@ -101,6 +101,7 @@ export class SmartCryptoCache {
   /**
    * Validate cache entry structure
    */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   private isValidCacheEntry(entry: any): entry is CacheEntry {
     return (
       entry &&
@@ -152,6 +153,7 @@ export class SmartCryptoCache {
    */
   async smartSearch(
     query: string,
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     apiSearchFn: (query: string) => Promise<any>
   ): Promise<SearchResult> {
     const searchTerm = query.toLowerCase().trim();
