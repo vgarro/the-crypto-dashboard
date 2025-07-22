@@ -69,7 +69,7 @@ npm start
     - Local storage to keep drag and drop option: :success:
     - Dark / Light Mode: I attempted three approaches (tailwind CSS + Cookie), (tailwind CSS + React), (Themed Remix + CSS + Cookie) without luck.
      I ended up dropping the effort. Suggested approaches by CHAT-GPT
-    - Jest tests: The initial test setup was failing and my brain was
+    - Jest tests: The initial test setup was failing and my brain was overwelmed :(
 
 CURSOR usage
 - Yes, I used cursor for generating the majority of this code
