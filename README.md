@@ -50,12 +50,15 @@ npm start
 - Usage of direct API to retrieve data.
    - Since Exchange rates change SO often, a local database to persist data that changes constantly is overkill.
    - In case a more robust caching mechanism is necessary, the local storage version of the smart cache can be changed.
-- Action Bar Component
+- Action Bar Component (Main)
     - This component holds 3 other components: Search, Live updates and Auto Update toggle.
-    - There's a good reason to split it
+    - There are reason to split it
 
-- `app/services/coinbase.server.ts` - API service layer with configurable constants
-- `app/components/` - Reusable UI components
+- Bonus points:
+    - Local storage to keep drag and drop option: :success:
+    - Dark / Light Mode: I attempted three approaches (tailwind CSS + Cookie), (tailwind CSS + React), (Themed Remix + CSS + Cookie) without luck.
+     I ended up dropping the effort.
+    - Jest tests: The initial test setup was failing and my brain was
 
 
 **Environment Variables:**
@@ -67,7 +70,7 @@ USE_FALLBACK_DATA=true                     # Graceful degradation
 
 ### Performance Considerations
 - **SSR + Minimal JS:** Fast initial loads, SEO-friendly
-- **Auto-refresh Rate:** Default 1min (configurable in `ActionBar.tsx` using a constant)
+- **Auto-refresh Rate:** Default 1min (configurable in `RefreshControls.tsx` using a constant)
 - **Client-side Filtering:** No server calls during search (Smart cache applied)
 - **localStorage Persistence:** Card order survives sessions
 
@@ -88,7 +91,7 @@ const CURRENCY_SYMBOLS = ['BTC', 'ETH', 'NEW_COIN'];
 // Default result count (app/services/coinbase.server.ts)
 const DEFAULT_RESULT_COUNT = 15; // Change from 10
 
-// Auto-refresh rate (app/components/ActionBar.tsx)
+// Auto-refresh rate (app/components/RefreshControls.tsx)
 const REFRESH_RATE_MINUTES = 2; // Change from 1
 ```
 

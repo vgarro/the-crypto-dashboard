@@ -152,11 +152,15 @@ the-crypto-dashboard/
 │   ├── services/
 │   │   └── coinbase.server.ts  # Coinbase API service (server-side)
 │   ├── components/
-│   │   ├── ActionBar.tsx       # Unified control panel with three-column layout
+│   │   ├── ActionBar.tsx       # Main action bar container (composition root)
+│   │   ├── SearchFilter.tsx    # Search input and filter functionality
+│   │   ├── StatusIndicator.tsx # Status badges and information display
+│   │   ├── RefreshControls.tsx # Auto-refresh toggle and manual refresh button
 │   │   ├── SortableCryptoCard.tsx # Individual draggable crypto card component
 │   │   └── SortableCryptoGrid.tsx # Drag and drop container with dnd-kit integration
 │   ├── utils/
-│   │   └── localStorage.ts     # Local storage utilities for order persistence
+│   │   ├── localStorage.ts     # Local storage utilities for order persistence
+│   │   └── smartCache.ts       # Smart caching logic for search functionality
 │   ├── root.tsx                # Root layout component
 │   ├── entry.client.tsx        # Client entry point
 │   ├── entry.server.tsx        # Server entry point
@@ -192,33 +196,50 @@ The dashboard shows real-time status:
 - 🟠 **Fallback Data**: Using sample data (API unavailable/not configured)
 - **Last Updated**: Timestamp of most recent data fetch
 
-### ActionBar - Unified Control Panel
+### ActionBar - Modular Control Panel
 
-The dashboard features a streamlined ActionBar with a three-column horizontal layout:
+The dashboard features a modular ActionBar system composed of three specialized components following React best practices:
 
-**Left Column - Status Information:**
+#### **Component Architecture:**
+
+**ActionBar.tsx (Composition Root):**
+- Orchestrates the three sub-components
+- Handles responsive layout switching (mobile vs desktop)
+- Manages prop distribution to child components
+- Maintains overall layout structure
+
+**SearchFilter.tsx:**
+- **Enhanced Filter Input**: Prominently positioned search field with responsive sizing
+- **Search Button**: Dedicated search button with loading states
+- **Clear Filter**: Easy-to-access clear button when filter is active
+- **Real-time Feedback**: Visual indicators for search states
+
+**StatusIndicator.tsx:**
 - **Live Data Indicator**: Green/orange status showing data source (API vs fallback)
 - **Last Updated**: Timestamp with clock icon showing when data was last refreshed
+- **Search Results Info**: Shows result count and data source (cached vs live)
+- **Conditional Display**: Smart visibility based on current state
 
-**Center Column - Search & Filter:**
-- **Enhanced Filter Input**: Larger, prominently positioned search field
-- **Search Button**: Dedicated search button next to input for improved UX
-- **Clear Filter**: Easy-to-access clear button when filter is active
-- **Real-time Results**: Instant filtering as you type
-
-**Right Column - Refresh Controls:**
+**RefreshControls.tsx:**
 - **Auto-Refresh Toggle**: Enable/disable automatic data updates (default: ON)
-- **Manual Refresh Button**: Instantly refresh data with loading indicator and spinner
-- **Refresh Rate**: Automatically updates every 1 minute when enabled
+- **Manual Refresh Button**: Instant refresh with loading indicator and spinner
+- **Refresh Rate**: Configurable 1-minute auto-refresh interval
+- **State Management**: Independent state for refresh functionality
 
-**Design Features:**
-- **Professional Layout**: Clean three-column grid design with proper spacing
-- **Responsive Design**: Adapts gracefully to different screen sizes
-- **Dark Mode Support**: Full dark/light theme compatibility
-- **Visual Hierarchy**: Clear separation of functionality areas
-- **Accessibility**: Proper focus states, ARIA labels, and keyboard navigation
+#### **Design Benefits:**
+- **Single Responsibility**: Each component has a focused purpose
+- **Reusability**: Components can be used independently or in different layouts
+- **Testability**: Isolated logic makes unit testing straightforward
+- **Maintainability**: Changes to one feature don't affect others
+- **Responsive Design**: Adapts gracefully from mobile stack to desktop grid
+- **Type Safety**: Full TypeScript interfaces for all component props
 
-The ActionBar consolidates all dashboard controls into a single, intuitive interface that maintains functionality while improving visual organization and user experience.
+#### **Responsive Behavior:**
+- **Mobile/Tablet (< lg)**: Vertical stack layout with search priority
+- **Desktop (≥ lg)**: Three-column horizontal grid layout
+- **Adaptive Components**: Each component handles its own responsive styling
+
+The modular ActionBar follows Remix and React best practices while maintaining all original functionality and improving code organization.
 
 ### Drag & Drop Functionality
 
@@ -327,7 +348,7 @@ The card styling is in the `CryptoCard` component. Modify the Tailwind classes t
 
 ### Customizing Auto-Refresh Rate
 
-To change the auto-refresh interval, modify the `REFRESH_RATE_MINUTES` constant in `app/components/ActionBar.tsx`:
+To change the auto-refresh interval, modify the `REFRESH_RATE_MINUTES` constant in `app/components/RefreshControls.tsx`:
 
 ```typescript
 // Change from 1 minute to 2 minutes
@@ -376,21 +397,43 @@ clearCryptoOrder();
 
 ### Customizing ActionBar Layout
 
-The ActionBar uses a CSS Grid layout that can be customized in `app/components/ActionBar.tsx`:
+The ActionBar uses a modular component system with flexible layout options:
 
+#### **Desktop Layout Customization (`ActionBar.tsx`):**
 ```typescript
 // Adjust column proportions (currently 3-6-3 out of 12)
 <div className="grid grid-cols-12 gap-4 items-center">
-  <div className="col-span-3">  {/* Left: Status */}
-  <div className="col-span-6">  {/* Center: Filter */}
-  <div className="col-span-3">  {/* Right: Controls */}
+  <div className="col-span-3">  {/* StatusIndicator */}
+  <div className="col-span-6">  {/* SearchFilter */}
+  <div className="col-span-3">  {/* RefreshControls */}
 ```
 
-**Layout Customization Options:**
-- Change column proportions (e.g., 2-8-2 for wider filter area)
-- Adjust gap spacing between columns
-- Modify responsive breakpoints for mobile layouts
-- Customize component positioning and alignment
+#### **Component-Level Customization:**
+
+**SearchFilter.tsx:**
+```typescript
+// Modify search input responsive behavior
+className="pr-16 lg:pr-20"  // Adjust padding for button placement
+```
+
+**RefreshControls.tsx:**
+```typescript
+// Customize refresh rate
+const REFRESH_RATE_MINUTES = 2;  // Change from 1 minute
+```
+
+**StatusIndicator.tsx:**
+```typescript
+// Modify badge styling or add new status types
+// Each status badge has independent styling
+```
+
+#### **Layout Customization Options:**
+- **Column Proportions**: Adjust grid ratios (e.g., 2-8-2 for wider search area)
+- **Component Order**: Reorder components within grid layout
+- **Responsive Breakpoints**: Modify mobile/desktop transition point (`lg:` prefix)
+- **Individual Styling**: Each component accepts className props for custom styling
+- **Component Replacement**: Swap entire components while maintaining interface
 
 ### Customizing Filter Behavior
 
