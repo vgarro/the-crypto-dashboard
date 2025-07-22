@@ -46,7 +46,7 @@ npm start
 
 **Data Flow:** Remix loader → Coinbase API → Client hydration → Real-time updates
 
-**Tradeoffs:**
+### ⚖️ Tradeoffs:
 - Usage of direct API to retrieve data.
    - Since Exchange rates change SO often, a local database to persist data that changes constantly is overkill.
    - In case a more robust caching mechanism is necessary, the local storage version of the smart cache can be changed.
@@ -69,7 +69,7 @@ npm start
 
 CURSOR usage
 - Yes, I used cursor for generating the majority of this code
-- Full Transparency: I'm attaching chat history (Prompt + Results) in x-cursor-logs
+- Full Transparency: I'm attaching chat history (Prompt + Results) in [x-cursor-logs](https://github.com/vgarro/the-crypto-dashboard/tree/main/x-cursor-logs)
 
 
 
