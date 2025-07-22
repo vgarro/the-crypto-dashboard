@@ -67,15 +67,13 @@ export default function Index() {
   const [filterValue, setFilterValue] = useState<string>('');
   const [isSearching, setIsSearching] = useState<boolean>(false);
 
-  // Apply saved order on initial load (client-side only)
+  // Apply saved order on initial load (client-side only) - runs only once
   useEffect(() => {
-    const orderedCryptos = applySavedOrder(cryptoData.cryptocurrencies);
-    if (orderedCryptos !== cryptoData.cryptocurrencies) {
-      setCryptoData(prev => ({
-        ...prev,
-        cryptocurrencies: orderedCryptos
-      }));
-    }
+    const orderedCryptos = applySavedOrder(initialData.cryptocurrencies);
+    setCryptoData(prev => ({
+      ...prev,
+      cryptocurrencies: orderedCryptos
+    }));
 
     // Initialize smart cache with initial data
     smartCache.updateBaseCache(
@@ -83,8 +81,7 @@ export default function Index() {
       initialData.isLiveData,
       initialData.totalAvailable
     );
-  }, [cryptoData.cryptocurrencies, cryptoData.isLiveData, cryptoData.totalAvailable
-    , initialData.cryptocurrencies, initialData.isLiveData, initialData.totalAvailable]);
+  }, []); // Empty dependency array - runs only once on mount
 
   // Smart search function that uses caching
   const performSmartSearch = useCallback(async (query: string): Promise<SearchResult> => {
@@ -131,17 +128,20 @@ export default function Index() {
         handleSearch(filterValue);
       } else {
         // Reset to base data when filter is cleared
-        if (cryptoData.isSearchResult) {
-          setCryptoData(() => ({
-            ...initialData,
-            cryptocurrencies: applySavedOrder(initialData.cryptocurrencies),
-          }));
-        }
+        setCryptoData(prev => {
+          if (prev.isSearchResult) {
+            return {
+              ...initialData,
+              cryptocurrencies: applySavedOrder(initialData.cryptocurrencies),
+            };
+          }
+          return prev;
+        });
       }
     }, 300); // 300ms debounce
 
     return () => clearTimeout(timeoutId);
-  }, [filterValue, handleSearch, cryptoData.isSearchResult, initialData]);
+  }, [filterValue, handleSearch]); // Removed cryptoData.isSearchResult and initialData dependencies
 
   // All cryptocurrencies are already filtered by the smart search
   const filteredCryptocurrencies = cryptoData.cryptocurrencies;
