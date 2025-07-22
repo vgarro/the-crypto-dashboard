@@ -1,4 +1,7 @@
-import type { MetaFunction } from "@remix-run/node";
+import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { useLoaderData } from "@remix-run/react";
+import { coinbaseService, type CryptoCurrency } from "~/services/coinbase.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -7,41 +10,36 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-// Crypto currency data array (20 items, displaying first 10)
-const cryptocurrencies = [
-  { id: 1, name: "Bitcoin", symbol: "BTC", exchangeRate: 43520.75, exchangeRateInBTC: 1.0 },
-  { id: 2, name: "Ethereum", symbol: "ETH", exchangeRate: 2678.32, exchangeRateInBTC: 0.0615 },
-  { id: 3, name: "Cardano", symbol: "ADA", exchangeRate: 0.4521, exchangeRateInBTC: 0.0000104 },
-  { id: 4, name: "Polkadot", symbol: "DOT", exchangeRate: 5.83, exchangeRateInBTC: 0.000134 },
-  { id: 5, name: "Chainlink", symbol: "LINK", exchangeRate: 14.72, exchangeRateInBTC: 0.000338 },
-  { id: 6, name: "Litecoin", symbol: "LTC", exchangeRate: 73.15, exchangeRateInBTC: 0.00168 },
-  { id: 7, name: "Bitcoin Cash", symbol: "BCH", exchangeRate: 234.67, exchangeRateInBTC: 0.00539 },
-  { id: 8, name: "Stellar", symbol: "XLM", exchangeRate: 0.1289, exchangeRateInBTC: 0.00000296 },
-  { id: 9, name: "VeChain", symbol: "VET", exchangeRate: 0.0275, exchangeRateInBTC: 0.00000063 },
-  { id: 10, name: "Dogecoin", symbol: "DOGE", exchangeRate: 0.0821, exchangeRateInBTC: 0.00000189 },
-  { id: 11, name: "Solana", symbol: "SOL", exchangeRate: 102.45, exchangeRateInBTC: 0.00235 },
-  { id: 12, name: "Avalanche", symbol: "AVAX", exchangeRate: 36.78, exchangeRateInBTC: 0.000845 },
-  { id: 13, name: "Polygon", symbol: "MATIC", exchangeRate: 0.7892, exchangeRateInBTC: 0.0000181 },
-  { id: 14, name: "Cosmos", symbol: "ATOM", exchangeRate: 9.67, exchangeRateInBTC: 0.000222 },
-  { id: 15, name: "Algorand", symbol: "ALGO", exchangeRate: 0.1634, exchangeRateInBTC: 0.00000375 },
-  { id: 16, name: "Tezos", symbol: "XTZ", exchangeRate: 0.9123, exchangeRateInBTC: 0.0000210 },
-  { id: 17, name: "Internet Computer", symbol: "ICP", exchangeRate: 4.78, exchangeRateInBTC: 0.000110 },
-  { id: 18, name: "NEAR Protocol", symbol: "NEAR", exchangeRate: 1.89, exchangeRateInBTC: 0.0000434 },
-  { id: 19, name: "Flow", symbol: "FLOW", exchangeRate: 0.6745, exchangeRateInBTC: 0.0000155 },
-  { id: 20, name: "Hedera", symbol: "HBAR", exchangeRate: 0.0567, exchangeRateInBTC: 0.00000130 }
-];
+// Remix Loader Function - Server-side data fetching
+export const loader = async ({ request }: LoaderFunctionArgs) => {
+  try {
+    // Fetch cryptocurrency data from the Coinbase service
+    const result = await coinbaseService.getCryptocurrencies();
 
-// Display only the first 10 cryptocurrencies
-const displayedCrypto = cryptocurrencies.slice(0, 10);
+    // Display only the first 10 cryptocurrencies
+    const displayedCrypto = result.data.slice(0, 10);
+
+    return json({
+      cryptocurrencies: displayedCrypto,
+      totalAvailable: result.data.length,
+      isLiveData: result.isLiveData,
+      lastUpdated: result.lastUpdated,
+    });
+  } catch (error) {
+    // If everything fails, return empty array with error status
+    console.error("Failed to load cryptocurrency data:", error);
+    return json({
+      cryptocurrencies: [],
+      totalAvailable: 0,
+      isLiveData: false,
+      lastUpdated: new Date().toISOString(),
+      error: "Failed to load cryptocurrency data",
+    }, { status: 500 });
+  }
+};
 
 interface CryptoCardProps {
-  crypto: {
-    id: number;
-    name: string;
-    symbol: string;
-    exchangeRate: number;
-    exchangeRateInBTC: number;
-  };
+  crypto: CryptoCurrency;
 }
 
 function CryptoCard({ crypto }: CryptoCardProps) {
@@ -99,6 +97,18 @@ function CryptoCard({ crypto }: CryptoCardProps) {
 }
 
 export default function Index() {
+  const { cryptocurrencies, totalAvailable, isLiveData, lastUpdated, error } = useLoaderData<typeof loader>();
+
+  // Format the last updated time
+  const formatLastUpdated = (timestamp: string) => {
+    return new Date(timestamp).toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
@@ -110,24 +120,77 @@ export default function Index() {
           <p className="text-gray-600 dark:text-gray-400 text-lg">
             Real-time cryptocurrency exchange rates and Bitcoin conversions
           </p>
-          <div className="mt-4 inline-flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900 rounded-full">
-            <span className="text-blue-800 dark:text-blue-200 text-sm font-medium">
-              Displaying {displayedCrypto.length} of {cryptocurrencies.length} currencies
-            </span>
+
+          {/* Status and Info Bar */}
+          <div className="mt-4 space-y-2">
+            <div className="inline-flex items-center px-4 py-2 bg-blue-100 dark:bg-blue-900 rounded-full">
+              <span className="text-blue-800 dark:text-blue-200 text-sm font-medium">
+                Displaying {cryptocurrencies.length} of {totalAvailable} currencies
+              </span>
+            </div>
+
+            {/* Live Data Status */}
+            <div className="flex justify-center space-x-4">
+              <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${isLiveData
+                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                }`}>
+                <div className={`w-2 h-2 rounded-full mr-2 ${isLiveData ? 'bg-green-500' : 'bg-orange-500'}`}></div>
+                {isLiveData ? 'Live Data' : 'Fallback Data'}
+              </div>
+
+              <div className="inline-flex items-center px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-xs text-gray-600 dark:text-gray-400">
+                Updated: {formatLastUpdated(lastUpdated)}
+              </div>
+            </div>
           </div>
+
+          {/* Error Message */}
+          {error && (
+            <div className="mt-4 max-w-md mx-auto">
+              <div className="bg-red-50 dark:bg-red-900/50 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <p className="text-sm text-red-800 dark:text-red-200">
+                      {error}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
         </header>
 
         {/* Crypto Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
-          {displayedCrypto.map((crypto) => (
-            <CryptoCard key={crypto.id} crypto={crypto} />
-          ))}
-        </div>
+        {cryptocurrencies.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
+            {cryptocurrencies.map((crypto) => (
+              <CryptoCard key={crypto.id} crypto={crypto} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-12">
+            <div className="mx-auto h-12 w-12 text-gray-400">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <h3 className="mt-2 text-sm font-medium text-gray-900 dark:text-gray-100">No cryptocurrency data available</h3>
+            <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Unable to load cryptocurrency data. Please check your API configuration.
+            </p>
+          </div>
+        )}
 
         {/* Footer */}
         <footer className="mt-12 text-center">
           <p className="text-gray-500 dark:text-gray-400 text-sm">
-            Built with Remix • Styled with Tailwind CSS
+            Built with Remix • Styled with Tailwind CSS • Powered by Coinbase API
           </p>
         </footer>
       </div>

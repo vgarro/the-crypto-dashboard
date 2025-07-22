@@ -8,9 +8,13 @@ A modern, responsive cryptocurrency dashboard built with Remix, TypeScript, and 
 - 📱 **Fully Responsive**: Optimized layout for mobile, tablet, and desktop
 - ⚡ **Remix Optimized**: Server-side rendering with minimal client-side JavaScript
 - 🌙 **Dark Mode Support**: Beautiful dark theme with proper contrast
-- 💰 **20+ Cryptocurrencies**: Comprehensive list with real-time style data
+- 💰 **20+ Cryptocurrencies**: Comprehensive list with real-time data from Coinbase API
 - ₿ **Bitcoin Conversion**: Shows exchange rates in both USD and Bitcoin
 - 🎯 **Performance Focused**: Fast loading with efficient rendering
+- 🔄 **Real-time Data**: Live cryptocurrency rates with automatic fallback
+- 🛡️ **Secure API Integration**: Environment-based configuration with secure token handling
+- ⚠️ **Error Handling**: Graceful degradation when APIs are unavailable
+- 📊 **Status Indicators**: Clear indicators for live vs. fallback data
 
 ## Layout
 
@@ -33,11 +37,12 @@ Each card displays:
 
 ## Tech Stack
 
-- **[Remix](https://remix.run/)** - Full-stack web framework
+- **[Remix](https://remix.run/)** - Full-stack web framework with server-side rendering
 - **[TypeScript](https://www.typescriptlang.org/)** - Type-safe JavaScript
 - **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
 - **[Vite](https://vitejs.dev/)** - Fast build tool
 - **[React 18](https://reactjs.org/)** - UI library (minimal usage per Remix best practices)
+- **[Coinbase API](https://developers.coinbase.com/)** - Real-time cryptocurrency data
 
 ## Prerequisites
 
@@ -45,6 +50,7 @@ Before running this project, ensure you have:
 
 - **Node.js** (version 20.0.0 or higher)
 - **npm** (comes with Node.js)
+- **Coinbase API Key** (for real-time data - optional, falls back to sample data)
 
 ## Setup Instructions
 
@@ -61,7 +67,37 @@ cd the-crypto-dashboard
 npm install
 ```
 
-### 3. Development Server
+### 3. Configure Environment Variables
+
+#### Option A: Get Real-Time Data (Recommended)
+
+1. **Create a Coinbase Account**: Visit [Coinbase](https://www.coinbase.com/) and sign up
+2. **Generate an API Key**:
+   - Log into your Coinbase account
+   - Navigate to **Settings** > **API**
+   - Click **+ New API Key**
+   - Choose appropriate permissions (read-only is sufficient)
+   - Set IP whitelist for production (optional for development)
+   - Copy your **API Key** (save the secret securely)
+
+3. **Setup Environment File**:
+   ```bash
+   cp .env.example .env
+   ```
+
+4. **Add Your API Key**:
+   Edit the `.env` file and replace `your_coinbase_api_key_here` with your actual API key:
+   ```bash
+   COINBASE_API_KEY=your_actual_api_key_here
+   API_REQUEST_TIMEOUT=5000
+   USE_FALLBACK_DATA=true
+   ```
+
+#### Option B: Use Sample Data Only
+
+If you prefer to skip the API setup, the application will automatically use sample data. No configuration needed!
+
+### 4. Development Server
 
 Start the development server:
 
@@ -70,6 +106,8 @@ npm run dev
 ```
 
 The application will be available at `http://localhost:5173`
+
+> **Note**: If no API key is configured, you'll see a "Fallback Data" indicator and the app will use sample cryptocurrency data.
 
 ### 4. Build for Production
 
@@ -101,45 +139,69 @@ npm start
 the-crypto-dashboard/
 ├── app/
 │   ├── routes/
-│   │   └── _index.tsx          # Main dashboard route
+│   │   └── _index.tsx          # Main dashboard route with loader
+│   ├── services/
+│   │   └── coinbase.server.ts  # Coinbase API service (server-side)
 │   ├── root.tsx                # Root layout component
 │   ├── entry.client.tsx        # Client entry point
 │   ├── entry.server.tsx        # Server entry point
 │   └── tailwind.css            # Tailwind CSS imports
 ├── public/                     # Static assets
-├── package.json                # Dependencies and scripts
-├── tailwind.config.ts          # Tailwind configuration
-├── tsconfig.json              # TypeScript configuration
-└── vite.config.ts             # Vite configuration
+├── .env.example               # Environment variables template
+├── package.json               # Dependencies and scripts
+├── tailwind.config.ts         # Tailwind configuration
+├── tsconfig.json             # TypeScript configuration
+└── vite.config.ts            # Vite configuration
 ```
+
+## API Configuration
+
+### Environment Variables
+
+| Variable | Description | Default | Required |
+|----------|-------------|---------|----------|
+| `COINBASE_API_KEY` | Your Coinbase API key for real-time data | - | No (uses fallback data) |
+| `API_REQUEST_TIMEOUT` | Request timeout in milliseconds | `5000` | No |
+| `USE_FALLBACK_DATA` | Enable fallback data when API fails | `true` | No |
+
+### Data Source Behavior
+
+- **With API Key**: Fetches live data from Coinbase API with automatic fallback
+- **Without API Key**: Uses curated sample data immediately
+- **API Timeout/Error**: Gracefully falls back to sample data
+
+### Status Indicators
+
+The dashboard shows real-time status:
+- 🟢 **Live Data**: Successfully fetching from Coinbase API
+- 🟠 **Fallback Data**: Using sample data (API unavailable/not configured)
+- **Last Updated**: Timestamp of most recent data fetch
 
 ## Customization
 
 ### Adding More Cryptocurrencies
 
-To add more currencies, edit the `cryptocurrencies` array in `app/routes/_index.tsx`:
+To add more currencies, edit the `CURRENCY_SYMBOLS` and `CURRENCY_NAMES` arrays in `app/services/coinbase.server.ts`:
 
 ```typescript
-const cryptocurrencies = [
-  // Add new cryptocurrency object
-  {
-    id: 21,
-    name: "New Coin",
-    symbol: "NEW",
-    exchangeRate: 1.23,
-    exchangeRateInBTC: 0.0000282
-  },
-  // ... existing currencies
+const CURRENCY_SYMBOLS = [
+  'BTC', 'ETH', 'ADA', // ... existing symbols
+  'NEW',  // Add new symbol
 ];
+
+const CURRENCY_NAMES: Record<string, string> = {
+  // ... existing mappings
+  'NEW': 'New Coin',  // Add name mapping
+};
 ```
 
 ### Changing Display Count
 
-To display more or fewer cards, modify the slice operation:
+To display more or fewer cards, modify the slice operation in the loader function:
 
 ```typescript
-// Display first 15 instead of 10
-const displayedCrypto = cryptocurrencies.slice(0, 15);
+// In app/routes/_index.tsx loader function
+const displayedCrypto = result.data.slice(0, 15); // Display first 15 instead of 10
 ```
 
 ### Customizing Card Design
@@ -160,10 +222,39 @@ This application supports all modern browsers including:
 
 ## Performance Features
 
-- **Server-Side Rendering (SSR)**: Fast initial page loads
+- **Server-Side Rendering (SSR)**: Fast initial page loads with Remix loader
+- **API Request Optimization**: Concurrent API calls with timeout protection
+- **Automatic Fallback**: Instant fallback to cached data on API failure
 - **Static Asset Optimization**: Efficient asset delivery
-- **Minimal JavaScript**: Reduced bundle size
+- **Minimal JavaScript**: Reduced bundle size following Remix patterns
 - **Progressive Enhancement**: Works without JavaScript
+- **Error Boundaries**: Graceful error handling throughout the application
+
+## Troubleshooting
+
+### Common Issues
+
+**"Fallback Data" showing instead of live data:**
+- Check that `COINBASE_API_KEY` is set in your `.env` file
+- Verify your API key has the correct permissions (read-only is sufficient)
+- Check the server console for API error messages
+
+**API requests timing out:**
+- Increase `API_REQUEST_TIMEOUT` in your `.env` file
+- Check your internet connection
+- Verify Coinbase API status at [status.coinbase.com](https://status.coinbase.com)
+
+**No data showing at all:**
+- Ensure `USE_FALLBACK_DATA=true` in your `.env` file
+- Check the browser console for JavaScript errors
+- Restart the development server with `npm run dev`
+
+### Debug Mode
+
+To enable detailed API logging, check your server console when running `npm run dev`. The service logs:
+- 🔄 API fetch attempts
+- ✅ Successful data retrieval
+- ❌ API failures and fallback usage
 
 ## Contributing
 
