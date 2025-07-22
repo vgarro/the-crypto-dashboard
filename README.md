@@ -12,6 +12,8 @@ A modern, responsive cryptocurrency dashboard built with Remix, TypeScript, and 
 - ₿ **Bitcoin Conversion**: Shows exchange rates in both USD and Bitcoin
 - 🎯 **Performance Focused**: Fast loading with efficient rendering
 - 🔄 **Real-time Data**: Live cryptocurrency rates with automatic fallback
+- 🔄 **Auto-Refresh**: Automatic data refresh every minute with manual refresh option
+- 🎛️ **Refresh Control**: Toggle auto-refresh on/off with visual status indicators
 - 🛡️ **Secure API Integration**: Environment-based configuration with secure token handling
 - ⚠️ **Error Handling**: Graceful degradation when APIs are unavailable
 - 📊 **Status Indicators**: Clear indicators for live vs. fallback data
@@ -139,9 +141,12 @@ npm start
 the-crypto-dashboard/
 ├── app/
 │   ├── routes/
-│   │   └── _index.tsx          # Main dashboard route with loader
+│   │   ├── _index.tsx          # Main dashboard route with loader and client-side state
+│   │   └── api.crypto.tsx      # Resource route for client-side data fetching
 │   ├── services/
 │   │   └── coinbase.server.ts  # Coinbase API service (server-side)
+│   ├── components/
+│   │   └── Refresh.tsx         # Auto-refresh component with toggle and manual refresh
 │   ├── root.tsx                # Root layout component
 │   ├── entry.client.tsx        # Client entry point
 │   ├── entry.server.tsx        # Server entry point
@@ -177,6 +182,23 @@ The dashboard shows real-time status:
 - 🟠 **Fallback Data**: Using sample data (API unavailable/not configured)
 - **Last Updated**: Timestamp of most recent data fetch
 
+### Auto-Refresh Feature
+
+The dashboard includes an intelligent auto-refresh system:
+
+- **Auto-Refresh Toggle**: Enable/disable automatic data updates (default: ON)
+- **Manual Refresh Button**: Instantly refresh data with loading indicator
+- **Refresh Rate**: Automatically updates every 1 minute when enabled
+- **Client-Side Updates**: Seamless data refresh without page reload
+- **Visual Feedback**: Loading spinner during refresh operations
+
+**How to Use:**
+1. **Auto-Refresh Toggle**: Click the toggle switch to enable/disable automatic updates
+2. **Manual Refresh**: Click the "Refresh" button to immediately update data
+3. **Status Monitoring**: Watch the "Last Updated" timestamp to track refresh activity
+
+The auto-refresh feature uses client-side fetching to update data without requiring a full page reload, providing a smooth user experience while keeping cryptocurrency data current.
+
 ## Customization
 
 ### Adding More Cryptocurrencies
@@ -211,6 +233,20 @@ The card styling is in the `CryptoCard` component. Modify the Tailwind classes t
 - Spacing and sizing
 - Hover effects
 - Typography
+
+### Customizing Auto-Refresh Rate
+
+To change the auto-refresh interval, modify the `REFRESH_RATE_MINUTES` constant in `app/components/Refresh.tsx`:
+
+```typescript
+// Change from 1 minute to 2 minutes
+const REFRESH_RATE_MINUTES = 2;
+```
+
+**Available Options:**
+- Set to any positive number for minutes (e.g., `0.5` for 30 seconds)
+- Recommended range: 0.5 to 5 minutes for optimal user experience
+- Lower values provide more real-time data but increase API usage
 
 ## Browser Support
 

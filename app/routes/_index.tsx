@@ -1,7 +1,9 @@
 import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
+import { useState, useCallback } from "react";
 import { coinbaseService, type CryptoCurrency } from "~/services/coinbase.server";
+import Refresh from "~/components/Refresh";
 
 export const meta: MetaFunction = () => {
   return [
@@ -10,7 +12,16 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-// Remix Loader Function - Server-side data fetching
+// Interface for the crypto data structure
+interface CryptoData {
+  cryptocurrencies: CryptoCurrency[];
+  totalAvailable: number;
+  isLiveData: boolean;
+  lastUpdated: string;
+  error?: string;
+}
+
+// Remix Loader Function - Server-side data fetching for initial render
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   try {
     // Fetch cryptocurrency data from the Coinbase service
@@ -97,17 +108,27 @@ function CryptoCard({ crypto }: CryptoCardProps) {
 }
 
 export default function Index() {
-  const { cryptocurrencies, totalAvailable, isLiveData, lastUpdated, error } = useLoaderData<typeof loader>();
+  const initialData = useLoaderData<typeof loader>();
 
-  // Format the last updated time
-  const formatLastUpdated = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString('en-US', {
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    });
-  };
+  // Client-side state for managing crypto data
+  const [cryptoData, setCryptoData] = useState<CryptoData>(initialData);
+
+  // Client-side refresh function
+  const handleRefresh = useCallback(async () => {
+    try {
+      const response = await fetch('/api/crypto');
+      if (!response.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      const newData = await response.json();
+      setCryptoData(newData);
+    } catch (error) {
+      console.error('Failed to refresh data:', error);
+      // Optionally show an error message to the user
+    }
+  }, []);
+
+  const { cryptocurrencies, totalAvailable, isLiveData, lastUpdated, error } = cryptoData;
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 p-4 md:p-8">
@@ -129,20 +150,12 @@ export default function Index() {
               </span>
             </div>
 
-            {/* Live Data Status */}
-            <div className="flex justify-center space-x-4">
-              <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium ${isLiveData
-                ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-                }`}>
-                <div className={`w-2 h-2 rounded-full mr-2 ${isLiveData ? 'bg-green-500' : 'bg-orange-500'}`}></div>
-                {isLiveData ? 'Live Data' : 'Fallback Data'}
-              </div>
-
-              <div className="inline-flex items-center px-3 py-1 bg-gray-100 dark:bg-gray-800 rounded-full text-xs text-gray-600 dark:text-gray-400">
-                Updated: {formatLastUpdated(lastUpdated)}
-              </div>
-            </div>
+            {/* Refresh Component - replaces the old Live Data Status section */}
+            <Refresh
+              onRefresh={handleRefresh}
+              lastUpdated={lastUpdated}
+              isLiveData={isLiveData}
+            />
           </div>
 
           {/* Error Message */}
