@@ -81,7 +81,9 @@ export default function Index() {
       initialData.isLiveData,
       initialData.totalAvailable
     );
-  }, []); // Empty dependency array - runs only once on mount
+    // Empty dependency array - runs only once on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Smart search function that uses caching
   const performSmartSearch = useCallback(async (query: string): Promise<SearchResult> => {
@@ -141,7 +143,9 @@ export default function Index() {
     }, 300); // 300ms debounce
 
     return () => clearTimeout(timeoutId);
-  }, [filterValue, handleSearch]); // Removed cryptoData.isSearchResult and initialData dependencies
+    // Removed cryptoData.isSearchResult and initialData dependencies since this creates a loop
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [filterValue, handleSearch]);
 
   // All cryptocurrencies are already filtered by the smart search
   const filteredCryptocurrencies = cryptoData.cryptocurrencies;

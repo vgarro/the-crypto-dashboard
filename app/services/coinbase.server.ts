@@ -57,6 +57,9 @@ const CURRENCY_SYMBOLS = [
   'SOL', 'AVAX', 'MATIC', 'ATOM', 'ALGO', 'XTZ', 'ICP', 'NEAR', 'FLOW', 'HBAR'
 ];
 
+// Minimum number of cryptocurrency results required for a successful API response
+const MIN_REQUIRED_RESULTS = 10;
+
 const CURRENCY_NAMES: Record<string, string> = {
   'BTC': 'Bitcoin',
   'ETH': 'Ethereum',
@@ -185,7 +188,7 @@ class CoinbaseService {
       const validResults = results.filter((result): result is CryptoCurrency => result !== null);
 
       // If we got some valid results, use them
-      if (validResults.length >= Math.min(limit, 10)) {
+      if (validResults.length >= Math.min(limit, MIN_REQUIRED_RESULTS)) {
         console.log(`✅ Successfully fetched ${validResults.length} live cryptocurrency rates`);
         return {
           data: validResults.slice(0, limit),
