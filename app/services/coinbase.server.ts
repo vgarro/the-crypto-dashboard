@@ -57,8 +57,8 @@ const CURRENCY_SYMBOLS = [
   'SOL', 'AVAX', 'MATIC', 'ATOM', 'ALGO', 'XTZ', 'ICP', 'NEAR', 'FLOW', 'HBAR'
 ];
 
-// Minimum number of cryptocurrency results required for a successful API response
-const MIN_REQUIRED_RESULTS = 10;
+// Default number of cryptocurrency results to return
+const DEFAULT_RESULT_COUNT = 10;
 
 const CURRENCY_NAMES: Record<string, string> = {
   'BTC': 'Bitcoin',
@@ -146,7 +146,7 @@ class CoinbaseService {
   /**
    * Fetches all cryptocurrency data with fallback mechanism
    */
-  async getCryptocurrencies(limit: number = 10): Promise<{
+  async getCryptocurrencies(limit: number = DEFAULT_RESULT_COUNT): Promise<{
     data: CryptoCurrency[];
     isLiveData: boolean;
     lastUpdated: string;
@@ -188,7 +188,7 @@ class CoinbaseService {
       const validResults = results.filter((result): result is CryptoCurrency => result !== null);
 
       // If we got some valid results, use them
-      if (validResults.length >= Math.min(limit, MIN_REQUIRED_RESULTS)) {
+      if (validResults.length >= Math.min(limit, DEFAULT_RESULT_COUNT)) {
         console.log(`✅ Successfully fetched ${validResults.length} live cryptocurrency rates`);
         return {
           data: validResults.slice(0, limit),

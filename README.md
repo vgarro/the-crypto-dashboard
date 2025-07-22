@@ -74,8 +74,8 @@ const displayedCrypto = result.data.slice(0, 15); // Change from 10
 // Add currencies (app/services/coinbase.server.ts)
 const CURRENCY_SYMBOLS = ['BTC', 'ETH', 'NEW_COIN'];
 
-// Minimum API results required (app/services/coinbase.server.ts)
-const MIN_REQUIRED_RESULTS = 15; // Change from 10
+// Default result count (app/services/coinbase.server.ts)
+const DEFAULT_RESULT_COUNT = 15; // Change from 10
 
 // Auto-refresh rate (app/components/ActionBar.tsx)
 const REFRESH_RATE_MINUTES = 2; // Change from 1

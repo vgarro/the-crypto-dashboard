@@ -290,14 +290,15 @@ const CURRENCY_NAMES: Record<string, string> = {
 };
 ```
 
-### Configuring API Success Threshold
+### Configuring Default Result Count
 
-The service requires a minimum number of successful API responses before considering the data fetch successful. This is controlled by the `MIN_REQUIRED_RESULTS` constant:
+The service uses a default result count that also serves as the minimum threshold for API success. This is controlled by the `DEFAULT_RESULT_COUNT` constant:
 
 ```typescript
 // In app/services/coinbase.server.ts
-const MIN_REQUIRED_RESULTS = 10; // Minimum successful responses required
+const DEFAULT_RESULT_COUNT = 10; // Default number of results to return
 
+// This also serves as minimum successful responses required
 // If fewer than this number of currencies return valid data,
 // the service will fall back to sample data
 ```
