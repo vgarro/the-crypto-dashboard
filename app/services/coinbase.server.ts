@@ -51,37 +51,7 @@ const FALLBACK_CRYPTO_DATA: CryptoCurrency[] = [
   { id: 20, name: "Hedera", symbol: "HBAR", exchangeRate: 0.0567, exchangeRateInBTC: 0.00000130, order: 19 }
 ];
 
-// Currency mapping for API requests
-const CURRENCY_SYMBOLS = [
-  'BTC', 'ETH', 'ADA', 'DOT', 'LINK', 'LTC', 'BCH', 'XLM', 'VET', 'DOGE',
-  'SOL', 'AVAX', 'MATIC', 'ATOM', 'ALGO', 'XTZ', 'ICP', 'NEAR', 'FLOW', 'HBAR'
-];
-
-// Default number of cryptocurrency results to return
-const DEFAULT_RESULT_COUNT = 10;
-
-const CURRENCY_NAMES: Record<string, string> = {
-  'BTC': 'Bitcoin',
-  'ETH': 'Ethereum',
-  'ADA': 'Cardano',
-  'DOT': 'Polkadot',
-  'LINK': 'Chainlink',
-  'LTC': 'Litecoin',
-  'BCH': 'Bitcoin Cash',
-  'XLM': 'Stellar',
-  'VET': 'VeChain',
-  'DOGE': 'Dogecoin',
-  'SOL': 'Solana',
-  'AVAX': 'Avalanche',
-  'MATIC': 'Polygon',
-  'ATOM': 'Cosmos',
-  'ALGO': 'Algorand',
-  'XTZ': 'Tezos',
-  'ICP': 'Internet Computer',
-  'NEAR': 'NEAR Protocol',
-  'FLOW': 'Flow',
-  'HBAR': 'Hedera'
-};
+import { CURRENCY_SYMBOLS, DEFAULT_RESULT_COUNT, CURRENCY_NAMES } from '~/constants';
 
 class CoinbaseService {
   private readonly apiKey: string;
@@ -188,7 +158,7 @@ class CoinbaseService {
       const validResults = results.filter((result): result is CryptoCurrency => result !== null);
 
       // If we got some valid results, use them
-      if (validResults.length >= Math.min(limit, DEFAULT_RESULT_COUNT)) {
+      if (validResults.length >= Math.min(limit, 10)) {
         console.log(`✅ Successfully fetched ${validResults.length} live cryptocurrency rates`);
         return {
           data: validResults.slice(0, limit),

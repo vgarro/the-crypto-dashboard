@@ -86,7 +86,7 @@ USE_FALLBACK_DATA=true                     # Graceful degradation
 
 ### Performance Considerations
 - **SSR + Minimal JS:** Fast initial loads, SEO-friendly
-- **Auto-refresh Rate:** Default 1min (configurable in `RefreshControls.tsx` using a constant)
+- **Auto-refresh Rate:** Default 2min (configurable in `app/constants.ts`)
 - **Client-side Filtering:** No server calls during search (Smart cache applied)
 - **localStorage Persistence:** Card order survives sessions
 
@@ -97,18 +97,20 @@ USE_FALLBACK_DATA=true                     # Graceful degradation
 
 ## Common Customizations
 
+All configurable constants are centralized in `app/constants.ts`:
+
 ```typescript
-// Display more currencies (app/routes/_index.tsx)
-const displayedCrypto = result.data.slice(0, 15); // Change from 10
+// Initial display limit (app/constants.ts)
+export const INITIAL_CRYPTO_DISPLAY_LIMIT = 10;
 
-// Add currencies (app/services/coinbase.server.ts)
-const CURRENCY_SYMBOLS = ['BTC', 'ETH', 'NEW_COIN'];
+// Supported currencies (app/constants.ts)
+export const CURRENCY_SYMBOLS = ['BTC', 'ETH', 'NEW_COIN'];
 
-// Default result count (app/services/coinbase.server.ts)
-const DEFAULT_RESULT_COUNT = 15; // Change from 10
+// Default result count (app/constants.ts)
+export const DEFAULT_RESULT_COUNT = 15; // Changed from 10
 
-// Auto-refresh rate (app/components/RefreshControls.tsx)
-const REFRESH_RATE_MINUTES = 2; // Change from 1
+// Auto-refresh rate (app/constants.ts)
+export const REFRESH_RATE_MINUTES = 2; // Changed from 1
 ```
 
 ## Development Commands

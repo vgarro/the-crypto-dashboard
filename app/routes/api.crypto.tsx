@@ -1,13 +1,14 @@
 import type { LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { coinbaseService } from "~/services/coinbase.server";
+import { INITIAL_CRYPTO_DISPLAY_LIMIT } from "~/constants";
 
 // Resource route for client-side data fetching with search support
 export const loader = async ({ request }: LoaderFunctionArgs) => {
     const url = new URL(request.url);
     const searchQuery = url.searchParams.get('search') || '';
     const limitParam = url.searchParams.get('limit');
-    const limit = limitParam ? parseInt(limitParam, 10) : 10;
+    const limit = limitParam ? parseInt(limitParam, 10) : INITIAL_CRYPTO_DISPLAY_LIMIT;
 
     try {
         let result;

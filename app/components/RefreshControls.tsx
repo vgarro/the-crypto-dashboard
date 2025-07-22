@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
+import { REFRESH_RATE_MINUTES } from "~/constants";
 
 interface RefreshControlsProps {
     onRefresh: () => void;
     className?: string;
 }
 
-// Client-side constant for refresh rate (1 minute default)
-const REFRESH_RATE_MINUTES = 1;
+// Calculate refresh rate in milliseconds
 const REFRESH_RATE_MS = REFRESH_RATE_MINUTES * 60 * 1000;
 
 export default function RefreshControls({

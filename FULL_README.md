@@ -295,19 +295,38 @@ The enhanced filter system in the ActionBar provides a more intuitive and visual
 
 ## Customization
 
-### Adding More Cryptocurrencies
+### Centralized Constants
 
-To add more currencies, edit the `CURRENCY_SYMBOLS` and `CURRENCY_NAMES` arrays in `app/services/coinbase.server.ts`:
+All configurable constants are centralized in `app/constants.ts` for easy maintenance:
 
 ```typescript
-const CURRENCY_SYMBOLS = [
-  'BTC', 'ETH', 'ADA', // ... existing symbols
-  'NEW',  // Add new symbol
+// Application Constants
+export const INITIAL_CRYPTO_DISPLAY_LIMIT = 10;
+export const CURRENCY_SYMBOLS = [/* too many to list */];
+export const DEFAULT_RESULT_COUNT = 15; // Changed from 10
+export const REFRESH_RATE_MINUTES = 2; // Changed from 1
+export const CURRENCY_NAMES: Record<string, string> = {
+  // ... currency mappings
+};
+```
+
+This centralization makes it easy to configure the application behavior in one place.
+
+### Adding More Cryptocurrencies
+
+To add more currencies, edit the `CURRENCY_SYMBOLS` and `CURRENCY_NAMES` arrays in `app/constants.ts`:
+
+```typescript
+export const CURRENCY_SYMBOLS = [
+  'BTC', 'ETH', 'NEW_COIN', // Current supported symbols
+  'ANOTHER_COIN',  // Add new symbol
 ];
 
-const CURRENCY_NAMES: Record<string, string> = {
-  // ... existing mappings
-  'NEW': 'New Coin',  // Add name mapping
+export const CURRENCY_NAMES: Record<string, string> = {
+  'BTC': 'Bitcoin',
+  'ETH': 'Ethereum',
+  'NEW_COIN': 'New Coin',
+  'ANOTHER_COIN': 'Another Coin',  // Add name mapping
 };
 ```
 
@@ -316,8 +335,8 @@ const CURRENCY_NAMES: Record<string, string> = {
 The service uses a default result count that also serves as the minimum threshold for API success. This is controlled by the `DEFAULT_RESULT_COUNT` constant:
 
 ```typescript
-// In app/services/coinbase.server.ts
-const DEFAULT_RESULT_COUNT = 10; // Default number of results to return
+// In app/constants.ts
+export const DEFAULT_RESULT_COUNT = 15; // Default number of results to return
 
 // This also serves as minimum successful responses required
 // If fewer than this number of currencies return valid data,
@@ -327,16 +346,18 @@ const DEFAULT_RESULT_COUNT = 10; // Default number of results to return
 **Customization Options:**
 - **Lower values (5-8)**: More tolerant of API failures, faster fallback
 - **Higher values (12-15)**: Stricter data quality requirements
-- **Default (10)**: Balanced approach ensuring reliable data while allowing some API failures
+- **Current default (15)**: Enhanced data quality requirements ensuring reliable data
 
 ### Changing Display Count
 
-To display more or fewer cards, modify the slice operation in the loader function:
+To display more or fewer cards, modify the `INITIAL_CRYPTO_DISPLAY_LIMIT` constant in `app/constants.ts`:
 
 ```typescript
-// In app/routes/_index.tsx loader function
-const displayedCrypto = result.data.slice(0, 15); // Display first 15 instead of 10
+// In app/constants.ts
+export const INITIAL_CRYPTO_DISPLAY_LIMIT = 10; // Change this value
 ```
+
+This constant is used in the loader function to determine how many cryptocurrencies to display initially.
 
 ### Customizing Card Design
 
@@ -348,11 +369,11 @@ The card styling is in the `CryptoCard` component. Modify the Tailwind classes t
 
 ### Customizing Auto-Refresh Rate
 
-To change the auto-refresh interval, modify the `REFRESH_RATE_MINUTES` constant in `app/components/RefreshControls.tsx`:
+To change the auto-refresh interval, modify the `REFRESH_RATE_MINUTES` constant in `app/constants.ts`:
 
 ```typescript
-// Change from 1 minute to 2 minutes
-const REFRESH_RATE_MINUTES = 2;
+// Change from 2 minutes to different value
+export const REFRESH_RATE_MINUTES = 2; // Current default
 ```
 
 **Available Options:**

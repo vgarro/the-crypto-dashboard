@@ -7,6 +7,7 @@ import ActionBar from "~/components/ActionBar";
 import SortableCryptoGrid from "~/components/SortableCryptoGrid";
 import { applySavedOrder, saveCryptoOrder, generateOrderMapping } from "~/utils/localStorage";
 import { smartCache, type SearchResult } from "~/utils/smartCache";
+import { INITIAL_CRYPTO_DISPLAY_LIMIT } from "~/constants";
 
 export const meta: MetaFunction = () => {
   return [
@@ -36,7 +37,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const result = await coinbaseService.getCryptocurrencies();
 
     // Display only the first 10 cryptocurrencies
-    const displayedCrypto = result.data.slice(0, 10);
+    const displayedCrypto = result.data.slice(0, INITIAL_CRYPTO_DISPLAY_LIMIT);
 
     return json({
       cryptocurrencies: displayedCrypto,
