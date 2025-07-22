@@ -61,7 +61,7 @@ npm start
   - When the API is down, there's placeholder data to be displayed (Live icon is updated accordingly)
 - Action Bar Component (Main)
     - This component holds 3 other components: Search, Live updates and Auto Update toggle.
-    - There are reason to split it is for readability and maintainability
+    - The reasons to split it are: readability and maintainability
 - Drag and Drop Library:
     - Used dnd-kit for it's simplicity and support for React. Suggested by Chat-GPT research.
 
