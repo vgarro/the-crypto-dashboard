@@ -1,6 +1,10 @@
 # Crypto Dashboard
 
 Modern cryptocurrency dashboard built with **Remix + TypeScript + Tailwind**. Features real-time data, drag & drop reordering, smart search, and responsive design.
+<img width="1431" height="1179" alt="Screenshot 2025-07-21 at 9 27 25 PM" src="https://github.com/user-attachments/assets/579653cc-027f-413f-a3dd-5fe8f2d34576" />
+<img width="1493" height="1214" alt="Screenshot 2025-07-21 at 9 11 51 PM" src="https://github.com/user-attachments/assets/b71f1f90-8f77-4f30-9c8a-aaed708b6150" />
+
+DEMO: 
 
 **🔗 [See FULL_README.md](./FULL_README.md) for comprehensive documentation**
 
