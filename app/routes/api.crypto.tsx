@@ -11,8 +11,14 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
         // Display only the first 10 cryptocurrencies
         const displayedCrypto = result.data.slice(0, 10);
 
+        // Ensure each crypto has an order field (index-based)
+        const cryptoWithOrder = displayedCrypto.map((crypto, index) => ({
+            ...crypto,
+            order: crypto.order !== undefined ? crypto.order : index
+        }));
+
         return json({
-            cryptocurrencies: displayedCrypto,
+            cryptocurrencies: cryptoWithOrder,
             totalAvailable: result.data.length,
             isLiveData: result.isLiveData,
             lastUpdated: result.lastUpdated,

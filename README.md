@@ -14,6 +14,8 @@ A modern, responsive cryptocurrency dashboard built with Remix, TypeScript, and 
 - 🔄 **Real-time Data**: Live cryptocurrency rates with automatic fallback
 - 🔄 **Auto-Refresh**: Automatic data refresh every minute with manual refresh option
 - 🎛️ **Refresh Control**: Toggle auto-refresh on/off with visual status indicators
+- 🎯 **Drag & Drop**: Intuitive card reordering with persistent order preferences
+- 💾 **Order Persistence**: Card arrangements saved to localStorage and restored on refresh
 - 🛡️ **Secure API Integration**: Environment-based configuration with secure token handling
 - ⚠️ **Error Handling**: Graceful degradation when APIs are unavailable
 - 📊 **Status Indicators**: Clear indicators for live vs. fallback data
@@ -44,6 +46,7 @@ Each card displays:
 - **[Tailwind CSS](https://tailwindcss.com/)** - Utility-first CSS framework
 - **[Vite](https://vitejs.dev/)** - Fast build tool
 - **[React 18](https://reactjs.org/)** - UI library (minimal usage per Remix best practices)
+- **[DND Kit](https://dndkit.com/)** - Modern drag and drop toolkit for React
 - **[Coinbase API](https://developers.coinbase.com/)** - Real-time cryptocurrency data
 
 ## Prerequisites
@@ -146,7 +149,11 @@ the-crypto-dashboard/
 │   ├── services/
 │   │   └── coinbase.server.ts  # Coinbase API service (server-side)
 │   ├── components/
-│   │   └── Refresh.tsx         # Auto-refresh component with toggle and manual refresh
+│   │   ├── Refresh.tsx         # Auto-refresh component with toggle and manual refresh
+│   │   ├── SortableCryptoCard.tsx # Individual draggable crypto card component
+│   │   └── SortableCryptoGrid.tsx # Drag and drop container with dnd-kit integration
+│   ├── utils/
+│   │   └── localStorage.ts     # Local storage utilities for order persistence
 │   ├── root.tsx                # Root layout component
 │   ├── entry.client.tsx        # Client entry point
 │   ├── entry.server.tsx        # Server entry point
@@ -199,6 +206,24 @@ The dashboard includes an intelligent auto-refresh system:
 
 The auto-refresh feature uses client-side fetching to update data without requiring a full page reload, providing a smooth user experience while keeping cryptocurrency data current.
 
+### Drag & Drop Functionality
+
+The dashboard features an intuitive drag and drop system for customizing card order:
+
+- **Drag to Reorder**: Click and drag any crypto card to reposition it within the grid
+- **Visual Feedback**: Smooth animations and visual indicators during drag operations
+- **Persistent Order**: Card arrangements are automatically saved to browser localStorage
+- **Cross-Session Persistence**: Your custom order is restored when you refresh or revisit the page
+- **Touch Support**: Works seamlessly on both desktop and mobile devices
+
+**How to Use:**
+1. **Reorder Cards**: Click and drag any cryptocurrency card to your desired position
+2. **Visual Cues**: A drag handle icon appears on hover to indicate draggable elements
+3. **Automatic Saving**: Your new order is instantly saved to localStorage
+4. **Persistent Layout**: Refresh the page or auto-refresh data - your order remains intact
+
+The drag and drop system maintains order even when new data is fetched, ensuring your personalized layout persists across all interactions.
+
 ## Customization
 
 ### Adding More Cryptocurrencies
@@ -247,6 +272,41 @@ const REFRESH_RATE_MINUTES = 2;
 - Set to any positive number for minutes (e.g., `0.5` for 30 seconds)
 - Recommended range: 0.5 to 5 minutes for optimal user experience
 - Lower values provide more real-time data but increase API usage
+
+### Customizing Drag & Drop Behavior
+
+To modify drag and drop settings, edit the `SortableCryptoGrid.tsx` component:
+
+```typescript
+// Adjust drag activation distance (pixels before drag starts)
+useSensor(PointerSensor, {
+  activationConstraint: {
+    distance: 8, // Change this value (default: 8px)
+  },
+})
+```
+
+**Drag Sensitivity Options:**
+- Lower values (1-5): More sensitive, easier to accidentally trigger
+- Default value (8): Balanced for most users
+- Higher values (10-15): Requires more deliberate drag motion
+
+### Managing Order Storage
+
+The order persistence system provides several utilities in `app/utils/localStorage.ts`:
+
+```typescript
+import { clearCryptoOrder } from "~/utils/localStorage";
+
+// Reset all saved card orders
+clearCryptoOrder();
+```
+
+**Storage Management:**
+- Orders are stored per-browser using localStorage
+- Data persists across browser sessions
+- Storage is automatically cleaned up if invalid
+- No server-side storage required
 
 ## Browser Support
 

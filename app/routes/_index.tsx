@@ -1,9 +1,11 @@
 import type { MetaFunction, LoaderFunctionArgs } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { coinbaseService, type CryptoCurrency } from "~/services/coinbase.server";
 import Refresh from "~/components/Refresh";
+import SortableCryptoGrid from "~/components/SortableCryptoGrid";
+import { applySavedOrder, saveCryptoOrder, generateOrderMapping } from "~/utils/localStorage";
 
 export const meta: MetaFunction = () => {
   return [
@@ -49,69 +51,24 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 };
 
-interface CryptoCardProps {
-  crypto: CryptoCurrency;
-}
 
-function CryptoCard({ crypto }: CryptoCardProps) {
-  return (
-    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 rounded-2xl p-6 shadow-2xl border border-gray-700 hover:shadow-3xl hover:scale-105 transition-all duration-300 min-h-[200px] flex flex-col justify-between">
-      {/* Card Header */}
-      <div className="flex justify-between items-start mb-4">
-        <div className="flex items-center space-x-2">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-bold text-sm">
-            {crypto.symbol.slice(0, 2)}
-          </div>
-          <div>
-            <h3 className="text-white font-semibold text-lg leading-tight">{crypto.name}</h3>
-            <p className="text-gray-400 text-sm">ID: {crypto.id}</p>
-          </div>
-        </div>
-        <div className="bg-yellow-500 text-black px-2 py-1 rounded-md text-xs font-bold">
-          {crypto.symbol}
-        </div>
-      </div>
-
-      {/* Card Body */}
-      <div className="space-y-3 flex-grow">
-        <div>
-          <p className="text-gray-400 text-sm">Exchange Rate</p>
-          <p className="text-white text-xl font-bold">
-            ${crypto.exchangeRate.toLocaleString('en-US', {
-              minimumFractionDigits: 2,
-              maximumFractionDigits: 8
-            })}
-          </p>
-        </div>
-
-        <div>
-          <p className="text-gray-400 text-sm">Rate in Bitcoin</p>
-          <p className="text-orange-400 text-lg font-semibold">
-            ₿ {crypto.exchangeRateInBTC.toFixed(8)}
-          </p>
-        </div>
-      </div>
-
-      {/* Card Footer */}
-      <div className="mt-4 pt-3 border-t border-gray-700">
-        <div className="flex justify-between items-center">
-          <span className="text-gray-500 text-xs">CRYPTO CARD</span>
-          <div className="flex space-x-1">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <div className="w-2 h-2 bg-yellow-500 rounded-full"></div>
-            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
 
 export default function Index() {
   const initialData = useLoaderData<typeof loader>();
 
   // Client-side state for managing crypto data
   const [cryptoData, setCryptoData] = useState<CryptoData>(initialData);
+
+  // Apply saved order on initial load (client-side only)
+  useEffect(() => {
+    const orderedCryptos = applySavedOrder(cryptoData.cryptocurrencies);
+    if (orderedCryptos !== cryptoData.cryptocurrencies) {
+      setCryptoData(prev => ({
+        ...prev,
+        cryptocurrencies: orderedCryptos
+      }));
+    }
+  }, []);
 
   // Client-side refresh function
   const handleRefresh = useCallback(async () => {
@@ -121,11 +78,30 @@ export default function Index() {
         throw new Error('Failed to fetch data');
       }
       const newData = await response.json();
-      setCryptoData(newData);
+
+      // Apply saved order to refreshed data
+      const orderedCryptos = applySavedOrder(newData.cryptocurrencies);
+      setCryptoData({
+        ...newData,
+        cryptocurrencies: orderedCryptos
+      });
     } catch (error) {
       console.error('Failed to refresh data:', error);
       // Optionally show an error message to the user
     }
+  }, []);
+
+  // Handle card reordering
+  const handleReorder = useCallback((reorderedCryptos: CryptoCurrency[]) => {
+    // Update local state
+    setCryptoData(prev => ({
+      ...prev,
+      cryptocurrencies: reorderedCryptos
+    }));
+
+    // Save order to localStorage
+    const orderMapping = generateOrderMapping(reorderedCryptos);
+    saveCryptoOrder(orderMapping);
   }, []);
 
   const { cryptocurrencies, totalAvailable, isLiveData, lastUpdated, error } = cryptoData;
@@ -179,13 +155,12 @@ export default function Index() {
           )}
         </header>
 
-        {/* Crypto Cards Grid */}
+        {/* Sortable Crypto Cards Grid */}
         {cryptocurrencies.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 auto-rows-fr">
-            {cryptocurrencies.map((crypto) => (
-              <CryptoCard key={crypto.id} crypto={crypto} />
-            ))}
-          </div>
+          <SortableCryptoGrid
+            cryptocurrencies={cryptocurrencies}
+            onReorder={handleReorder}
+          />
         ) : (
           <div className="text-center py-12">
             <div className="mx-auto h-12 w-12 text-gray-400">
