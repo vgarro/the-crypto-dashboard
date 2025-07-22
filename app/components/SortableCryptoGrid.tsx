@@ -20,6 +20,7 @@ import SortableCryptoCard from './SortableCryptoCard';
 interface SortableCryptoGridProps {
     cryptocurrencies: CryptoCurrency[];
     onReorder: (reorderedCryptos: CryptoCurrency[]) => void;
+    filterValue?: string;
 }
 
 // Non-draggable fallback card component
@@ -79,7 +80,8 @@ function StaticCryptoCard({ crypto }: { crypto: CryptoCurrency }) {
 
 export default function SortableCryptoGrid({
     cryptocurrencies,
-    onReorder
+    onReorder,
+    filterValue = ''
 }: SortableCryptoGridProps) {
     const [activeId, setActiveId] = React.useState<number | null>(null);
     const [isClient, setIsClient] = React.useState(false);

@@ -13,9 +13,11 @@ A modern, responsive cryptocurrency dashboard built with Remix, TypeScript, and 
 - 🎯 **Performance Focused**: Fast loading with efficient rendering
 - 🔄 **Real-time Data**: Live cryptocurrency rates with automatic fallback
 - 🔄 **Auto-Refresh**: Automatic data refresh every minute with manual refresh option
-- 🎛️ **Refresh Control**: Toggle auto-refresh on/off with visual status indicators
+- 🎛️ **Unified Action Bar**: Three-column horizontal control panel with organized layout
 - 🎯 **Drag & Drop**: Intuitive card reordering with persistent order preferences
 - 💾 **Order Persistence**: Card arrangements saved to localStorage and restored on refresh
+- 🔍 **Real-time Filter**: Search and filter cards by cryptocurrency name or symbol
+- 🎨 **Enhanced Search UI**: Prominent filter input with search button and clear functionality
 - 🛡️ **Secure API Integration**: Environment-based configuration with secure token handling
 - ⚠️ **Error Handling**: Graceful degradation when APIs are unavailable
 - 📊 **Status Indicators**: Clear indicators for live vs. fallback data
@@ -149,7 +151,7 @@ the-crypto-dashboard/
 │   ├── services/
 │   │   └── coinbase.server.ts  # Coinbase API service (server-side)
 │   ├── components/
-│   │   ├── Refresh.tsx         # Auto-refresh component with toggle and manual refresh
+│   │   ├── ActionBar.tsx       # Unified control panel with three-column layout
 │   │   ├── SortableCryptoCard.tsx # Individual draggable crypto card component
 │   │   └── SortableCryptoGrid.tsx # Drag and drop container with dnd-kit integration
 │   ├── utils/
@@ -189,22 +191,33 @@ The dashboard shows real-time status:
 - 🟠 **Fallback Data**: Using sample data (API unavailable/not configured)
 - **Last Updated**: Timestamp of most recent data fetch
 
-### Auto-Refresh Feature
+### ActionBar - Unified Control Panel
 
-The dashboard includes an intelligent auto-refresh system:
+The dashboard features a streamlined ActionBar with a three-column horizontal layout:
 
+**Left Column - Status Information:**
+- **Live Data Indicator**: Green/orange status showing data source (API vs fallback)
+- **Last Updated**: Timestamp with clock icon showing when data was last refreshed
+
+**Center Column - Search & Filter:**
+- **Enhanced Filter Input**: Larger, prominently positioned search field
+- **Search Button**: Dedicated search button next to input for improved UX
+- **Clear Filter**: Easy-to-access clear button when filter is active
+- **Real-time Results**: Instant filtering as you type
+
+**Right Column - Refresh Controls:**
 - **Auto-Refresh Toggle**: Enable/disable automatic data updates (default: ON)
-- **Manual Refresh Button**: Instantly refresh data with loading indicator
+- **Manual Refresh Button**: Instantly refresh data with loading indicator and spinner
 - **Refresh Rate**: Automatically updates every 1 minute when enabled
-- **Client-Side Updates**: Seamless data refresh without page reload
-- **Visual Feedback**: Loading spinner during refresh operations
 
-**How to Use:**
-1. **Auto-Refresh Toggle**: Click the toggle switch to enable/disable automatic updates
-2. **Manual Refresh**: Click the "Refresh" button to immediately update data
-3. **Status Monitoring**: Watch the "Last Updated" timestamp to track refresh activity
+**Design Features:**
+- **Professional Layout**: Clean three-column grid design with proper spacing
+- **Responsive Design**: Adapts gracefully to different screen sizes
+- **Dark Mode Support**: Full dark/light theme compatibility
+- **Visual Hierarchy**: Clear separation of functionality areas
+- **Accessibility**: Proper focus states, ARIA labels, and keyboard navigation
 
-The auto-refresh feature uses client-side fetching to update data without requiring a full page reload, providing a smooth user experience while keeping cryptocurrency data current.
+The ActionBar consolidates all dashboard controls into a single, intuitive interface that maintains functionality while improving visual organization and user experience.
 
 ### Drag & Drop Functionality
 
@@ -223,6 +236,39 @@ The dashboard features an intuitive drag and drop system for customizing card or
 4. **Persistent Layout**: Refresh the page or auto-refresh data - your order remains intact
 
 The drag and drop system maintains order even when new data is fetched, ensuring your personalized layout persists across all interactions.
+
+### Enhanced Filter System
+
+The ActionBar features an improved filtering system with enhanced usability:
+
+- **Prominent Positioning**: Filter input occupies the center column (50% of ActionBar width)
+- **Search Button**: Dedicated blue search button for explicit search actions
+- **Smart Search**: Filter cryptocurrency cards by name or symbol (case-insensitive)
+- **Dual Clear Options**: Both inline "×" button and dedicated clear button in no-results state
+- **Real-time Results**: Cards are filtered instantly as you type
+- **No Results State**: Elegant message display when no cards match the filter
+- **Preserved Order**: Filtered results maintain your custom drag-and-drop order
+
+**ActionBar Filter Features:**
+- **Visual Search Icon**: Clear search indicator on the left side of input
+- **Progressive Enhancement**: Search button provides additional functionality
+- **Responsive Input**: Larger input field for better mobile experience
+- **Clear Visual Feedback**: Button states and transitions provide user feedback
+
+**How to Use:**
+1. **Search Cards**: Type in the filter input to search by cryptocurrency name (e.g., "Bitcoin") or symbol (e.g., "BTC")
+2. **Use Search Button**: Click the search button to focus input or trigger advanced search features
+3. **Case Insensitive**: Search works regardless of uppercase or lowercase input
+4. **Clear Filter**: Click the "×" button in the input field or the "Clear filter" button in no-results state
+5. **Instant Results**: Cards appear/disappear immediately as you type
+
+**Search Examples:**
+- Type "bit" → Shows Bitcoin, Bitcoin Cash
+- Type "ETH" → Shows Ethereum
+- Type "sol" → Shows Solana
+- Type "ada" → Shows Cardano
+
+The enhanced filter system in the ActionBar provides a more intuitive and visually appealing search experience while maintaining all existing functionality.
 
 ## Customization
 
@@ -261,7 +307,7 @@ The card styling is in the `CryptoCard` component. Modify the Tailwind classes t
 
 ### Customizing Auto-Refresh Rate
 
-To change the auto-refresh interval, modify the `REFRESH_RATE_MINUTES` constant in `app/components/Refresh.tsx`:
+To change the auto-refresh interval, modify the `REFRESH_RATE_MINUTES` constant in `app/components/ActionBar.tsx`:
 
 ```typescript
 // Change from 1 minute to 2 minutes
@@ -307,6 +353,57 @@ clearCryptoOrder();
 - Data persists across browser sessions
 - Storage is automatically cleaned up if invalid
 - No server-side storage required
+
+### Customizing ActionBar Layout
+
+The ActionBar uses a CSS Grid layout that can be customized in `app/components/ActionBar.tsx`:
+
+```typescript
+// Adjust column proportions (currently 3-6-3 out of 12)
+<div className="grid grid-cols-12 gap-4 items-center">
+  <div className="col-span-3">  {/* Left: Status */}
+  <div className="col-span-6">  {/* Center: Filter */}
+  <div className="col-span-3">  {/* Right: Controls */}
+```
+
+**Layout Customization Options:**
+- Change column proportions (e.g., 2-8-2 for wider filter area)
+- Adjust gap spacing between columns
+- Modify responsive breakpoints for mobile layouts
+- Customize component positioning and alignment
+
+### Customizing Filter Behavior
+
+The filter functionality can be customized in the main page component (`app/routes/_index.tsx`):
+
+```typescript
+// Modify filter logic to include additional fields
+const filteredCryptocurrencies = cryptoData.cryptocurrencies.filter((crypto) => {
+  if (!filterValue.trim()) return true;
+
+  const searchTerm = filterValue.toLowerCase().trim();
+  const nameMatch = crypto.name.toLowerCase().includes(searchTerm);
+  const symbolMatch = crypto.symbol.toLowerCase().includes(searchTerm);
+  // Add custom matching logic here
+
+  return nameMatch || symbolMatch;
+});
+```
+
+**Filter Customization Options:**
+- Add fuzzy matching for typo tolerance
+- Include exchange rate ranges in search
+- Add category-based filtering
+- Implement advanced search operators
+
+### Filter Performance
+
+The filter system is optimized for real-time performance:
+
+- **Client-side Filtering**: No server requests during search
+- **Memoized Results**: Efficient re-rendering with React best practices
+- **Debounced Input**: Smooth typing experience without lag
+- **Preserved State**: Filter state maintains during auto-refresh cycles
 
 ## Browser Support
 

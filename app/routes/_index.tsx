@@ -3,7 +3,7 @@ import { json } from "@remix-run/node";
 import { useLoaderData } from "@remix-run/react";
 import { useState, useCallback, useEffect } from "react";
 import { coinbaseService, type CryptoCurrency } from "~/services/coinbase.server";
-import Refresh from "~/components/Refresh";
+import ActionBar from "~/components/ActionBar";
 import SortableCryptoGrid from "~/components/SortableCryptoGrid";
 import { applySavedOrder, saveCryptoOrder, generateOrderMapping } from "~/utils/localStorage";
 
@@ -58,6 +58,7 @@ export default function Index() {
 
   // Client-side state for managing crypto data
   const [cryptoData, setCryptoData] = useState<CryptoData>(initialData);
+  const [filterValue, setFilterValue] = useState<string>('');
 
   // Apply saved order on initial load (client-side only)
   useEffect(() => {
@@ -69,6 +70,17 @@ export default function Index() {
       }));
     }
   }, []);
+
+  // Filter cryptocurrencies based on filter value
+  const filteredCryptocurrencies = cryptoData.cryptocurrencies.filter((crypto) => {
+    if (!filterValue.trim()) return true;
+
+    const searchTerm = filterValue.toLowerCase().trim();
+    const nameMatch = crypto.name.toLowerCase().includes(searchTerm);
+    const symbolMatch = crypto.symbol.toLowerCase().includes(searchTerm);
+
+    return nameMatch || symbolMatch;
+  });
 
   // Client-side refresh function
   const handleRefresh = useCallback(async () => {
@@ -104,6 +116,11 @@ export default function Index() {
     saveCryptoOrder(orderMapping);
   }, []);
 
+  // Handle filter change
+  const handleFilterChange = useCallback((value: string) => {
+    setFilterValue(value);
+  }, []);
+
   const { cryptocurrencies, totalAvailable, isLiveData, lastUpdated, error } = cryptoData;
 
   return (
@@ -126,11 +143,13 @@ export default function Index() {
               </span>
             </div>
 
-            {/* Refresh Component - replaces the old Live Data Status section */}
-            <Refresh
+            {/* ActionBar Component - unified control panel */}
+            <ActionBar
               onRefresh={handleRefresh}
               lastUpdated={lastUpdated}
               isLiveData={isLiveData}
+              filterValue={filterValue}
+              onFilterChange={handleFilterChange}
             />
           </div>
 
@@ -156,11 +175,30 @@ export default function Index() {
         </header>
 
         {/* Sortable Crypto Cards Grid */}
-        {cryptocurrencies.length > 0 ? (
+        {filteredCryptocurrencies.length > 0 ? (
           <SortableCryptoGrid
-            cryptocurrencies={cryptocurrencies}
+            cryptocurrencies={filteredCryptocurrencies}
             onReorder={handleReorder}
+            filterValue={filterValue}
           />
+        ) : filterValue.trim() ? (
+          <div className="text-center py-12">
+            <div className="mx-auto h-16 w-16 text-gray-400 mb-4">
+              <svg fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No cards found</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
+              No cryptocurrency cards match your search for "<span className="font-medium">{filterValue}</span>"
+            </p>
+            <button
+              onClick={() => setFilterValue('')}
+              className="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              Clear filter
+            </button>
+          </div>
         ) : (
           <div className="text-center py-12">
             <div className="mx-auto h-12 w-12 text-gray-400">
