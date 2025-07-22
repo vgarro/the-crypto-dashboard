@@ -6,6 +6,12 @@ interface ActionBarProps {
     isLiveData: boolean;
     filterValue: string;
     onFilterChange: (value: string) => void;
+    isSearching?: boolean;
+    searchResultsInfo?: {
+        fromCache: boolean;
+        hasMoreResults: boolean;
+        totalFound: number;
+    };
 }
 
 // Client-side constant for refresh rate (1 minute default)
@@ -17,7 +23,9 @@ export default function ActionBar({
     lastUpdated,
     isLiveData,
     filterValue,
-    onFilterChange
+    onFilterChange,
+    isSearching = false,
+    searchResultsInfo
 }: ActionBarProps) {
     const [autoRefresh, setAutoRefresh] = useState(true);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -72,8 +80,8 @@ export default function ActionBar({
                 <div className="col-span-3 flex flex-col space-y-2">
                     {/* Live Data Status */}
                     <div className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium w-fit ${isLiveData
-                            ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                            : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+                        ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
+                        : 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
                         }`}>
                         <div className={`w-2 h-2 rounded-full mr-2 ${isLiveData ? 'bg-green-500' : 'bg-orange-500'}`}></div>
                         {isLiveData ? 'Live Data' : 'Fallback Data'}
@@ -86,6 +94,16 @@ export default function ActionBar({
                         </svg>
                         Updated: {formatLastUpdated(lastUpdated)}
                     </div>
+
+                    {/* Search Results Info */}
+                    {searchResultsInfo && filterValue.trim() && (
+                        <div className="inline-flex items-center px-3 py-1 bg-blue-100 dark:bg-blue-900 rounded-full text-xs text-blue-800 dark:text-blue-200 w-fit">
+                            <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            {searchResultsInfo.totalFound} found • {searchResultsInfo.fromCache ? 'Cached' : 'Live'}
+                        </div>
+                    )}
                 </div>
 
                 {/* Center Column: Filter Input (6 columns - bigger) */}
@@ -100,8 +118,10 @@ export default function ActionBar({
                             type="text"
                             value={filterValue}
                             onChange={(e) => onFilterChange(e.target.value)}
-                            placeholder="Filter by name or symbol..."
-                            className="block w-full pl-10 pr-20 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-colors duration-200"
+                            placeholder="Search by name or symbol..."
+                            disabled={isSearching}
+                            className={`block w-full pl-10 pr-20 py-2.5 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-colors duration-200 ${isSearching ? 'opacity-50 cursor-not-allowed' : ''
+                                }`}
                         />
                         <div className="absolute inset-y-0 right-0 flex items-center">
                             {filterValue && (
@@ -117,12 +137,20 @@ export default function ActionBar({
                             )}
                             <button
                                 onClick={handleSearch}
-                                className="mr-2 px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
-                                title="Search"
+                                disabled={isSearching}
+                                className={`mr-2 px-2 py-1 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-xs font-medium rounded transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${isSearching ? 'cursor-not-allowed' : ''
+                                    }`}
+                                title={isSearching ? "Searching..." : "Search"}
                             >
-                                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                                </svg>
+                                {isSearching ? (
+                                    <svg className="w-3 h-3 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                    </svg>
+                                ) : (
+                                    <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                )}
                             </button>
                         </div>
                     </div>

@@ -6,6 +6,7 @@ import { coinbaseService, type CryptoCurrency } from "~/services/coinbase.server
 import ActionBar from "~/components/ActionBar";
 import SortableCryptoGrid from "~/components/SortableCryptoGrid";
 import { applySavedOrder, saveCryptoOrder, generateOrderMapping } from "~/utils/localStorage";
+import { smartCache, type SearchResult } from "~/utils/smartCache";
 
 export const meta: MetaFunction = () => {
   return [
@@ -21,6 +22,10 @@ interface CryptoData {
   isLiveData: boolean;
   lastUpdated: string;
   error?: string;
+  isSearchResult?: boolean;
+  searchQuery?: string;
+  fromCache?: boolean;
+  hasMoreResults?: boolean;
 }
 
 // Remix Loader Function - Server-side data fetching for initial render
@@ -34,7 +39,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
     return json({
       cryptocurrencies: displayedCrypto,
-      totalAvailable: result.data.length,
+      totalAvailable: result.totalAvailable,
       isLiveData: result.isLiveData,
       lastUpdated: result.lastUpdated,
     });
@@ -59,6 +64,7 @@ export default function Index() {
   // Client-side state for managing crypto data
   const [cryptoData, setCryptoData] = useState<CryptoData>(initialData);
   const [filterValue, setFilterValue] = useState<string>('');
+  const [isSearching, setIsSearching] = useState<boolean>(false);
 
   // Apply saved order on initial load (client-side only)
   useEffect(() => {
@@ -69,27 +75,99 @@ export default function Index() {
         cryptocurrencies: orderedCryptos
       }));
     }
+
+    // Initialize smart cache with initial data
+    smartCache.updateBaseCache(
+      initialData.cryptocurrencies,
+      initialData.isLiveData,
+      initialData.totalAvailable
+    );
   }, []);
 
-  // Filter cryptocurrencies based on filter value
-  const filteredCryptocurrencies = cryptoData.cryptocurrencies.filter((crypto) => {
-    if (!filterValue.trim()) return true;
+  // Smart search function that uses caching
+  const performSmartSearch = useCallback(async (query: string): Promise<SearchResult> => {
+    return await smartCache.smartSearch(query, async (searchQuery: string) => {
+      const response = await fetch(`/api/crypto?search=${encodeURIComponent(searchQuery)}&limit=20`);
+      if (!response.ok) {
+        throw new Error('Failed to search cryptocurrencies');
+      }
+      return await response.json();
+    });
+  }, []);
 
-    const searchTerm = filterValue.toLowerCase().trim();
-    const nameMatch = crypto.name.toLowerCase().includes(searchTerm);
-    const symbolMatch = crypto.symbol.toLowerCase().includes(searchTerm);
+  // Handle search with smart caching
+  const handleSearch = useCallback(async (query: string) => {
+    setIsSearching(true);
+    try {
+      const result = await performSmartSearch(query);
 
-    return nameMatch || symbolMatch;
-  });
+      // Apply saved order to search results
+      const orderedCryptos = applySavedOrder(result.cryptocurrencies);
+
+      setCryptoData({
+        cryptocurrencies: orderedCryptos,
+        totalAvailable: result.totalAvailable,
+        isLiveData: result.isLiveData,
+        lastUpdated: result.lastUpdated,
+        isSearchResult: true,
+        searchQuery: result.searchQuery,
+        fromCache: result.fromCache,
+        hasMoreResults: result.hasMoreResults,
+      });
+    } catch (error) {
+      console.error('Smart search failed:', error);
+      // Keep current data on search failure
+    } finally {
+      setIsSearching(false);
+    }
+  }, [performSmartSearch]);
+
+  // Debounced search effect
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (filterValue.trim()) {
+        handleSearch(filterValue);
+      } else {
+        // Reset to base data when filter is cleared
+        if (cryptoData.isSearchResult) {
+          setCryptoData(prev => ({
+            ...initialData,
+            cryptocurrencies: applySavedOrder(initialData.cryptocurrencies),
+          }));
+        }
+      }
+    }, 300); // 300ms debounce
+
+    return () => clearTimeout(timeoutId);
+  }, [filterValue, handleSearch]);
+
+  // All cryptocurrencies are already filtered by the smart search
+  const filteredCryptocurrencies = cryptoData.cryptocurrencies;
 
   // Client-side refresh function
   const handleRefresh = useCallback(async () => {
     try {
-      const response = await fetch('/api/crypto');
+      let response;
+
+      if (cryptoData.isSearchResult && cryptoData.searchQuery) {
+        // Refresh search results
+        response = await fetch(`/api/crypto?search=${encodeURIComponent(cryptoData.searchQuery)}&limit=20`);
+      } else {
+        // Refresh base data
+        response = await fetch('/api/crypto');
+      }
+
       if (!response.ok) {
         throw new Error('Failed to fetch data');
       }
       const newData = await response.json();
+
+      // Update smart cache with fresh data
+      if (!newData.isSearchResult) {
+        smartCache.updateBaseCache(newData.cryptocurrencies, newData.isLiveData, newData.totalAvailable);
+      } else {
+        smartCache.updateSearchCache(newData.searchQuery, newData.cryptocurrencies, newData.isLiveData);
+      }
 
       // Apply saved order to refreshed data
       const orderedCryptos = applySavedOrder(newData.cryptocurrencies);
@@ -101,7 +179,7 @@ export default function Index() {
       console.error('Failed to refresh data:', error);
       // Optionally show an error message to the user
     }
-  }, []);
+  }, [cryptoData.isSearchResult, cryptoData.searchQuery]);
 
   // Handle card reordering
   const handleReorder = useCallback((reorderedCryptos: CryptoCurrency[]) => {
@@ -150,6 +228,12 @@ export default function Index() {
               isLiveData={isLiveData}
               filterValue={filterValue}
               onFilterChange={handleFilterChange}
+              isSearching={isSearching}
+              searchResultsInfo={cryptoData.isSearchResult ? {
+                fromCache: cryptoData.fromCache || false,
+                hasMoreResults: cryptoData.hasMoreResults || false,
+                totalFound: cryptocurrencies.length,
+              } : undefined}
             />
           </div>
 

@@ -143,10 +143,11 @@ class CoinbaseService {
   /**
    * Fetches all cryptocurrency data with fallback mechanism
    */
-  async getCryptocurrencies(): Promise<{
+  async getCryptocurrencies(limit: number = 10): Promise<{
     data: CryptoCurrency[];
     isLiveData: boolean;
     lastUpdated: string;
+    totalAvailable: number;
   }> {
     try {
       console.log('🔄 Fetching live cryptocurrency data from Coinbase API...');
@@ -184,12 +185,13 @@ class CoinbaseService {
       const validResults = results.filter((result): result is CryptoCurrency => result !== null);
 
       // If we got some valid results, use them
-      if (validResults.length >= 10) {
+      if (validResults.length >= Math.min(limit, 10)) {
         console.log(`✅ Successfully fetched ${validResults.length} live cryptocurrency rates`);
         return {
-          data: validResults,
+          data: validResults.slice(0, limit),
           isLiveData: true,
           lastUpdated: new Date().toISOString(),
+          totalAvailable: validResults.length,
         };
       }
 
@@ -201,9 +203,74 @@ class CoinbaseService {
       if (this.useFallback) {
         console.log('🔄 Falling back to cached sample data...');
         return {
-          data: FALLBACK_CRYPTO_DATA,
+          data: FALLBACK_CRYPTO_DATA.slice(0, limit),
           isLiveData: false,
           lastUpdated: new Date().toISOString(),
+          totalAvailable: FALLBACK_CRYPTO_DATA.length,
+        };
+      }
+
+      throw error;
+    }
+  }
+
+  /**
+   * Search cryptocurrencies by name or symbol
+   */
+  async searchCryptocurrencies(query: string, limit: number = 20): Promise<{
+    data: CryptoCurrency[];
+    isLiveData: boolean;
+    lastUpdated: string;
+    searchQuery: string;
+  }> {
+    const searchTerm = query.toLowerCase().trim();
+
+    if (!searchTerm) {
+      const result = await this.getCryptocurrencies(limit);
+      return {
+        ...result,
+        searchQuery: query,
+      };
+    }
+
+    try {
+      console.log(`🔍 Searching for cryptocurrencies matching: "${searchTerm}"`);
+
+      // Get full dataset for searching
+      const result = await this.getCryptocurrencies(CURRENCY_SYMBOLS.length);
+
+      // Filter results based on search term
+      const filteredData = result.data.filter(crypto => {
+        const nameMatch = crypto.name.toLowerCase().includes(searchTerm);
+        const symbolMatch = crypto.symbol.toLowerCase().includes(searchTerm);
+        return nameMatch || symbolMatch;
+      });
+
+      console.log(`✅ Found ${filteredData.length} cryptocurrencies matching "${searchTerm}"`);
+
+      return {
+        data: filteredData.slice(0, limit),
+        isLiveData: result.isLiveData,
+        lastUpdated: result.lastUpdated,
+        searchQuery: query,
+      };
+    } catch (error) {
+      console.error('❌ Failed to search cryptocurrencies:', error);
+
+      // Fallback search in static data
+      if (this.useFallback) {
+        console.log('🔄 Falling back to search in cached sample data...');
+        const filteredData = FALLBACK_CRYPTO_DATA.filter(crypto => {
+          const nameMatch = crypto.name.toLowerCase().includes(searchTerm);
+          const symbolMatch = crypto.symbol.toLowerCase().includes(searchTerm);
+          return nameMatch || symbolMatch;
+        });
+
+        return {
+          data: filteredData.slice(0, limit),
+          isLiveData: false,
+          lastUpdated: new Date().toISOString(),
+          searchQuery: query,
         };
       }
 
